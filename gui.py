@@ -1,6 +1,8 @@
 import os
 import sys
 from PySide.QtGui import *
+from gui_form_start import TFormStart
+from gui_form_main import TFormMain
 
 
 class TApp(QApplication):
@@ -17,7 +19,9 @@ class TApp(QApplication):
 		self.PATH_COMMON        = "{0}/".format(os.path.abspath(os.curdir))
 
 	def _init_forms_(self):
-		pass
+		self.form_start = TFormStart(self)
+		self.form_main = TFormMain(self)
 
 app = TApp()
+app.form_start.show()
 sys.exit(app.exec_())
