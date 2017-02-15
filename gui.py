@@ -15,7 +15,9 @@ class TApp(QApplication):
 		self._init_forms_()
 
 	def _init_path_(self):
-		self.PATH_COMMON        = "{0}/".format(os.path.abspath(os.curdir))
+		self.PATH_COMMON      = "{0}".format(os.path.abspath(os.curdir))
+		self.PATH_ICONS       = "{0}/icons".format(self.PATH_COMMON)
+		self.PATH_ICONS_SMALL = "{0}/small".format(self.PATH_ICONS)
 
 	def _init_forms_(self):
 		self.form_start = TFormStart(self)
