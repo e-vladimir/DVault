@@ -1,5 +1,6 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
+import os
 
 
 class TFormStart(QMainWindow):
@@ -32,7 +33,9 @@ class TFormStart(QMainWindow):
 		self.setContentsMargins(3, 3, 3, 3)
 
 	def _init_events_(self):
-		pass
+		self.action_list_add.triggered.connect(self.event_list_add)
+		self.action_list_remove.triggered.connect(self.event_list_remove)
+		self.action_list_rename.triggered.connect(self.event_list_rename)
 
 	def _init_menu_(self):
 		self.menu_list = self.menuBar().addMenu("Список")
@@ -51,3 +54,21 @@ class TFormStart(QMainWindow):
 
 		self.table_vaults.resizeColumnToContents(0)
 		self.table_vaults.resizeColumnToContents(1)
+
+	def add_vault_to_list(self, in_name, in_filename):
+		pass
+
+	def event_list_add(self):
+		_filename, _result = QFileDialog().getOpenFileName()
+
+		if os.path.exists(_filename):
+			_name, _result = QInputDialog().getText(self, "", "")
+
+			if _result:
+				self.add_vault_to_list(_name, _filename)
+
+	def event_list_rename(self):
+		pass
+
+	def event_list_remove(self):
+		pass
