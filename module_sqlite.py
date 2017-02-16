@@ -70,7 +70,7 @@ class TSQLiteConnection(object):
     def transaction_rollback(self):
         self.SQL_connection.rollback()
 
-    def get_list(self, in_sql_text, in_column=0):
+    def get_column(self, in_sql_text, in_column=0):
         if self.exec_select_temp(in_sql_text):
             result = []
 

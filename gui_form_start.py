@@ -1,7 +1,7 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
 import os
-from module_vaults_list import TVaultsList
+from module_sqlite import TSQLiteConnection
 
 
 class TFormStart(QMainWindow):
@@ -17,10 +17,11 @@ class TFormStart(QMainWindow):
 		self._init_menu_()
 		self._init_events_()
 
-		self.load_vault_list()
+		self.load_vaults_list()
 
 	def _init_db_(self):
-		self.vaults = TVaultsList("{0}/vaults.sqlie".format(self.application.PATH_COMMON))
+		self.sqlite = TSQLiteConnection("{0}/vaults.sqlie".format(self.application.PATH_COMMON))
+		self.sqlite.exec_create("CREATE TABLE IF NOT EXISTS vaults (name TEXT, filename TEXT)")
 
 	def _init_icons_(self):
 		self.is_list_add    = QIcon("{0}/list-add.png".format(self.application.PATH_ICONS_SMALL))
@@ -56,14 +57,32 @@ class TFormStart(QMainWindow):
 		self.menu_list.addSeparator()
 		self.menu_list.addAction(self.action_list_rename)
 
-	def load_vault_list(self):
+	def load_vaults_list(self):
 		self.table_vaults.setHeaderLabels(["Название", "Путь"])
+
+		_sql = "SELECT name, filename FROM vaults ORDER BY name"
+
+		vaults_names     = self.sqlite.get_column(_sql, 0)
+		vaults_filenames = self.sqlite.get_column(_sql, 1)
+
+		for _index in range(len(vaults_names)):
+			_name     = vaults_names[_index]
+			_filename = vaults_filenames[_index]
+
+			_item = QTreeWidgetItem()
+			_item.setText(0, _name)
+			_item.setText(1, _filename)
+
+			self.table_vaults.addTopLevelItem(_item)
 
 		self.table_vaults.resizeColumnToContents(0)
 		self.table_vaults.resizeColumnToContents(1)
 
 	def add_vault_to_list(self, in_name, in_filename):
-		pass
+		_sql = "INSERT INTO vaults (name, filename) VALUES ('{0}', '{1}')".format(in_name, in_filename)
+		self.sqlite.exec_insert(_sql)
+
+		self.load_vaults_list()
 
 	def event_list_add(self):
 		_filename, _result = QFileDialog().getOpenFileName()
@@ -85,3 +104,5 @@ class TFormStart(QMainWindow):
 
 		self.action_list_rename.setEnabled(_item_selected)
 		self.action_list_remove.setEnabled(_item_selected)
+
+		self.table_vaults.setItemSelected(self.table_vaults.currentItem(), True)
