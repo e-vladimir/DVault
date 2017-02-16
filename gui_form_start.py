@@ -1,6 +1,7 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
 import os
+from module_vaults_list import TVaultsList
 
 
 class TFormStart(QMainWindow):
@@ -9,13 +10,17 @@ class TFormStart(QMainWindow):
 
 		self.application = in_application
 
-		self._init_icons_()
+		self._init_db_()
 
+		self._init_icons_()
 		self._init_ui_()
 		self._init_menu_()
 		self._init_events_()
 
 		self.load_vault_list()
+
+	def _init_db_(self):
+		self.vaults = TVaultsList("{0}/vaults.sqlie".format(self.application.PATH_COMMON))
 
 	def _init_icons_(self):
 		self.is_list_add    = QIcon("{0}/list-add.png".format(self.application.PATH_ICONS_SMALL))
@@ -36,6 +41,8 @@ class TFormStart(QMainWindow):
 		self.action_list_add.triggered.connect(self.event_list_add)
 		self.action_list_remove.triggered.connect(self.event_list_remove)
 		self.action_list_rename.triggered.connect(self.event_list_rename)
+
+		self.table_vaults.currentItemChanged.connect(self.table_vault_onCurentItemChanged)
 
 	def _init_menu_(self):
 		self.menu_list = self.menuBar().addMenu("Список")
@@ -72,3 +79,9 @@ class TFormStart(QMainWindow):
 
 	def event_list_remove(self):
 		pass
+
+	def table_vault_onCurentItemChanged(self):
+		_item_selected = self.table_vaults.currentItem() is not None
+
+		self.action_list_rename.setEnabled(_item_selected)
+		self.action_list_remove.setEnabled(_item_selected)
