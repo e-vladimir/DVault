@@ -19,6 +19,9 @@ class TFormStart(QMainWindow):
 
 		self.load_vaults_list()
 
+		# TODO: Подумать как вызывать обработчик изменения таблицы, что бы установить доступность элементов меню
+		self.table_vault_onCurentItemChanged()
+
 	def _init_db_(self):
 		self.sqlite = TSQLiteConnection("{0}/vaults.sqlite".format(self.application.PATH_COMMON))
 		self.sqlite.exec_create("CREATE TABLE IF NOT EXISTS vaults (name TEXT, filename TEXT)")
@@ -139,7 +142,14 @@ class TFormStart(QMainWindow):
 				QMessageBox().information(self, "Отмена добавления", "Указанное имя уже есть в списке")
 
 	def event_list_remove(self):
-		pass
+		_name   = self.table_vaults.currentItem().text(0)
+		_remove = QMessageBox().question(self, "Удаление", "Подтвердите удаление записи: {0}".format(_name), QMessageBox.No|QMessageBox.Yes) == QMessageBox.Yes
+
+		if _remove:
+			_sql = "DELETE FROM vaults WHERE name = '{0}'".format(_name)
+			self.sqlite.exec_delete(_sql)
+
+			self.load_vaults_list()
 
 	def table_vault_onCurentItemChanged(self):
 		_item_selected = self.table_vaults.currentItem() is not None
