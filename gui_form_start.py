@@ -34,6 +34,7 @@ class TFormStart(QMainWindow):
 		self.setMinimumSize(640, 480)
 
 		self.table_vaults = QTreeWidget()
+		self.table_vaults.setIndentation(0)
 		self.setCentralWidget(self.table_vaults)
 
 		self.setContentsMargins(3, 3, 3, 3)
@@ -84,9 +85,9 @@ class TFormStart(QMainWindow):
 		self.table_vaults.resizeColumnToContents(0)
 		self.table_vaults.resizeColumnToContents(1)
 
-	def add_vault_to_list(self, in_name, in_filename):
-		# TODO: Добавить проверку на существование
+		self.table_vaults.setColumnWidth(0, self.table_vaults.columnWidth(0) + 10)
 
+	def add_vault_to_list(self, in_name, in_filename):
 		_exist = False
 
 		for _index in range(self.table_vaults.topLevelItemCount()):
@@ -104,7 +105,7 @@ class TFormStart(QMainWindow):
 			QMessageBox().information(self, "Отмена добавления", "Указанное имя\файл уже есть в списке")
 
 	def event_list_add(self):
-		_filename, _result = QFileDialog().getOpenFileName()
+		_filename, _result = QFileDialog().getOpenFileName(self, filter="*.vault")
 
 		if os.path.exists(_filename):
 			_name, _result = QInputDialog().getText(self, "", "")
