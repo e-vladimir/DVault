@@ -24,7 +24,7 @@ class TFormStart(QMainWindow):
 		self.sqlite.exec_create("CREATE TABLE IF NOT EXISTS vaults (name TEXT, filename TEXT)")
 
 	def _init_icons_(self):
-		self.is_list_add    = QIcon("{0}/list-add.png".format(self.application.PATH_ICONS_SMALL))
+		self.is_list_add = QIcon("{0}/list-add.png".format(self.application.PATH_ICONS_SMALL))
 		self.is_list_remove = QIcon("{0}/list-remove.png".format(self.application.PATH_ICONS_SMALL))
 		self.is_list_rename = QIcon("{0}/list-edit.png".format(self.application.PATH_ICONS_SMALL))
 
@@ -48,8 +48,8 @@ class TFormStart(QMainWindow):
 	def _init_menu_(self):
 		self.menu_list = self.menuBar().addMenu("Список")
 
-		self.action_list_add    = QAction(self.is_list_add,    "Добавить",      None)
-		self.action_list_remove = QAction(self.is_list_remove, "Удалить",       None)
+		self.action_list_add = QAction(self.is_list_add, "Добавить", None)
+		self.action_list_remove = QAction(self.is_list_remove, "Удалить", None)
 		self.action_list_rename = QAction(self.is_list_rename, "Переименовать", None)
 
 		self.menu_list.addAction(self.action_list_add)
@@ -58,11 +58,13 @@ class TFormStart(QMainWindow):
 		self.menu_list.addAction(self.action_list_rename)
 
 	def load_vaults_list(self):
+		self.table_vaults.clear()
+
 		self.table_vaults.setHeaderLabels(["Название", "Путь"])
 
 		_sql = "SELECT name, filename FROM vaults ORDER BY name"
 
-		vaults_names     = self.sqlite.get_column(_sql, 0)
+		vaults_names = self.sqlite.get_column(_sql, 0)
 		vaults_filenames = self.sqlite.get_column(_sql, 1)
 
 		for _index in range(len(vaults_names)):
@@ -73,16 +75,33 @@ class TFormStart(QMainWindow):
 			_item.setText(0, _name)
 			_item.setText(1, _filename)
 
+			if not os.path.exists(_filename):
+				_item.setForeground(0, Qt.gray)
+				_item.setForeground(1, Qt.gray)
+
 			self.table_vaults.addTopLevelItem(_item)
 
 		self.table_vaults.resizeColumnToContents(0)
 		self.table_vaults.resizeColumnToContents(1)
 
 	def add_vault_to_list(self, in_name, in_filename):
-		_sql = "INSERT INTO vaults (name, filename) VALUES ('{0}', '{1}')".format(in_name, in_filename)
-		self.sqlite.exec_insert(_sql)
+		# TODO: Добавить проверку на существование
 
-		self.load_vaults_list()
+		_exist = False
+
+		for _index in range(self.table_vaults.topLevelItemCount()):
+			_name     = self.table_vaults.topLevelItem(_index).text(0)
+			_filename = self.table_vaults.topLevelItem(_index).text(1)
+
+			_exist = _name == in_name or _filename == in_filename
+
+		if not _exist:
+			_sql = "INSERT INTO vaults (name, filename) VALUES ('{0}', '{1}')".format(in_name, in_filename)
+			self.sqlite.exec_insert(_sql)
+
+			self.load_vaults_list()
+		else:
+			QMessageBox().information(self, "Отмена добавления", "Указанное имя\файл уже есть в списке")
 
 	def event_list_add(self):
 		_filename, _result = QFileDialog().getOpenFileName()
