@@ -20,7 +20,7 @@ class TFormStart(QMainWindow):
 		self.load_vaults_list()
 
 	def _init_db_(self):
-		self.sqlite = TSQLiteConnection("{0}/vaults.sqlie".format(self.application.PATH_COMMON))
+		self.sqlite = TSQLiteConnection("{0}/vaults.sqlite".format(self.application.PATH_COMMON))
 		self.sqlite.exec_create("CREATE TABLE IF NOT EXISTS vaults (name TEXT, filename TEXT)")
 
 	def _init_icons_(self):
@@ -96,6 +96,9 @@ class TFormStart(QMainWindow):
 
 			_exist = _name == in_name or _filename == in_filename
 
+			if _exist:
+				break
+
 		if not _exist:
 			_sql = "INSERT INTO vaults (name, filename) VALUES ('{0}', '{1}')".format(in_name, in_filename)
 			self.sqlite.exec_insert(_sql)
@@ -114,7 +117,26 @@ class TFormStart(QMainWindow):
 				self.add_vault_to_list(_name, _filename)
 
 	def event_list_rename(self):
-		pass
+		_old_name         = self.table_vaults.currentItem().text(0)
+		_new_name, _result = QInputDialog().getText(self, "Новое название", "Старое название: {0}".format(_old_name), text=_old_name)
+		_exist            = False
+
+		if _result:
+			for _index in range(self.table_vaults.topLevelItemCount()):
+				_name = self.table_vaults.topLevelItem(_index).text(0)
+
+				_exist = _name == _new_name
+
+				if _exist:
+					break
+
+			if not _exist:
+				_sql = "UPDATE vaults SET name = '{0}' WHERE name='{1}'".format(_new_name, _old_name)
+
+				self.sqlite.exec_update(_sql)
+				self.load_vaults_list()
+			else:
+				QMessageBox().information(self, "Отмена добавления", "Указанное имя уже есть в списке")
 
 	def event_list_remove(self):
 		pass
