@@ -2,11 +2,11 @@ from module_sqlite import TSQLiteConnection
 from simplecrypto import decrypt, encrypt, sha1
 
 
-def encrypto(in_message, in_password):
+def _encrypt(in_message, in_password):
 	return str(encrypt(in_message, in_password))
 
 
-def decrypto(in_message, in_password):
+def _decrypt(in_message, in_password):
 	return str(decrypt(in_message, in_password), 'utf-8')
 
 
@@ -14,9 +14,11 @@ class TVault:
 	def __init__(self):
 		self.sqlite   = None
 		self.password = ""
+		self.filename = ""
 
 	def _init_db_(self, in_filename):
-		self.sqlite = TSQLiteConnection(in_filename)
+		self.sqlite   = TSQLiteConnection(in_filename)
+		self.filename = in_filename
 
 		_sql = "CREATE TABLE IF NOT EXISTS sys_info (field TEXT, value TEXT)"
 		self.sqlite.exec_create(_sql)

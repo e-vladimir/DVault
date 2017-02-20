@@ -4,6 +4,12 @@ import os
 from module_sqlite import TSQLiteConnection
 
 
+class QTableVaults(QTreeWidget):
+	def keyPressEvent(self, in_event):
+		if in_event.key() == Qt.Key_Return:
+			self.parent().event_list_open()
+
+
 class TFormStart(QMainWindow):
 	def __init__(self, in_application=None):
 		super(TFormStart, self).__init__()
@@ -20,7 +26,7 @@ class TFormStart(QMainWindow):
 		self.load_vaults_list()
 
 		# TODO: Подумать как вызывать обработчик изменения таблицы, что бы установить доступность элементов меню
-		self.table_vault_onCurentItemChanged()
+		self.table_vaults_onCurentItemChanged()
 
 	def _init_db_(self):
 		self.sqlite = TSQLiteConnection("{0}/vaults.sqlite".format(self.application.PATH_COMMON))
@@ -32,22 +38,24 @@ class TFormStart(QMainWindow):
 		self.is_list_rename = QIcon("{0}/list-edit.png".format(self.application.PATH_ICONS_SMALL))
 
 	def _init_ui_(self):
-		self.setWindowTitle("DVault - {0}".format(self.application.PATH_COMMON))
+		self.setWindowTitle("DVault    {0}".format(self.application.PATH_COMMON))
 
 		self.setMinimumSize(640, 480)
 
-		self.table_vaults = QTreeWidget()
+		self.table_vaults = QTableVaults()
 		self.table_vaults.setIndentation(0)
 		self.setCentralWidget(self.table_vaults)
 
 		self.setContentsMargins(3, 3, 3, 3)
+
+		self.statusBar().showMessage("Открыть хранилище: Enter или Двойной клик")
 
 	def _init_events_(self):
 		self.action_list_add.triggered.connect(self.event_list_add)
 		self.action_list_remove.triggered.connect(self.event_list_remove)
 		self.action_list_rename.triggered.connect(self.event_list_rename)
 
-		self.table_vaults.currentItemChanged.connect(self.table_vault_onCurentItemChanged)
+		self.table_vaults.currentItemChanged.connect(self.table_vaults_onCurentItemChanged)
 		self.table_vaults.doubleClicked.connect(self.event_list_open)
 
 	def _init_menu_(self):
@@ -157,10 +165,13 @@ class TFormStart(QMainWindow):
 
 		self.application.form_main.open_vault(_filename)
 
-	def table_vault_onCurentItemChanged(self):
+	def table_vaults_onCurentItemChanged(self):
 		_item_selected = self.table_vaults.currentItem() is not None
 
 		self.action_list_rename.setEnabled(_item_selected)
 		self.action_list_remove.setEnabled(_item_selected)
 
 		self.table_vaults.setItemSelected(self.table_vaults.currentItem(), True)
+
+	def table_vaults_onKeyPress(self):
+		pass
