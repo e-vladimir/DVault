@@ -48,6 +48,7 @@ class TFormStart(QMainWindow):
 		self.action_list_rename.triggered.connect(self.event_list_rename)
 
 		self.table_vaults.currentItemChanged.connect(self.table_vault_onCurentItemChanged)
+		self.table_vaults.doubleClicked.connect(self.event_list_open)
 
 	def _init_menu_(self):
 		self.menu_list = self.menuBar().addMenu("Список")
@@ -150,6 +151,11 @@ class TFormStart(QMainWindow):
 			self.sqlite.exec_delete(_sql)
 
 			self.load_vaults_list()
+
+	def event_list_open(self):
+		_filename   = self.table_vaults.currentItem().text(1)
+
+		self.application.form_main.open_vault(_filename)
 
 	def table_vault_onCurentItemChanged(self):
 		_item_selected = self.table_vaults.currentItem() is not None

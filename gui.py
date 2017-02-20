@@ -2,6 +2,7 @@ import os
 import sys
 from PySide.QtGui import *
 from gui_form_start import TFormStart
+from gui_form_main  import TFormMain
 
 
 class TApp(QApplication):
@@ -21,6 +22,7 @@ class TApp(QApplication):
 
 	def _init_forms_(self):
 		self.form_start = TFormStart(self)
+		self.form_main  = TFormMain(self)
 
 app = TApp()
 app.form_start.show()
