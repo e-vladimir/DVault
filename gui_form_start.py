@@ -8,6 +8,8 @@ class QTableVaults(QTreeWidget):
 	def keyPressEvent(self, in_event):
 		if in_event.key() == Qt.Key_Return:
 			self.parent().event_list_open()
+		elif in_event.key() == Qt.Key_Insert:
+			self.parent().event_list_add()
 
 
 class TFormStart(QMainWindow):
@@ -48,7 +50,7 @@ class TFormStart(QMainWindow):
 
 		self.setContentsMargins(3, 3, 3, 3)
 
-		self.statusBar().showMessage("Открыть хранилище: Enter или Двойной клик")
+		self.statusBar().showMessage("Ins - добавить, Enter/Двойной клик - открыть", 0)
 
 	def _init_events_(self):
 		self.action_list_add.triggered.connect(self.event_list_add)
