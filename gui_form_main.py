@@ -217,20 +217,23 @@ class TFormMain(QMainWindow):
 		else:
 			struct_ids = self.vault.struct_get_list_by_id(in_parent_item.data(0, Qt.UserRole))
 
-		for struct_id in struct_ids:
-			_name = self.vault.struct_get_name(struct_id)
+		if struct_ids is not None:
+			for struct_id in struct_ids:
+				self.vault.load_struct(struct_id)
 
-			if _name is not None:
-				_item = QTreeWidgetItem()
-				_item.setText(0, _name)
-				_item.setData(0, Qt.UserRole, struct_id)
+				_name = self.vault.struct_item.get_field("name")
 
-				if in_parent_item is None:
-					self.tree_main.addTopLevelItem(_item)
-				else:
-					in_parent_item.addChild(_item)
+				if _name is not None:
+					_item = QTreeWidgetItem()
+					_item.setText(0, _name)
+					_item.setData(0, Qt.UserRole, struct_id)
 
-				self.load_struct(_item)
+					if in_parent_item is None:
+						self.tree_main.addTopLevelItem(_item)
+					else:
+						in_parent_item.addChild(_item)
+
+					self.load_struct(_item)
 
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
