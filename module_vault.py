@@ -21,11 +21,15 @@ class TStructItem:
 		_id_exist = not self.vault.sqlite.get_single("SELECT COUNT(ID) FROM struct WHERE id='{0}'".format(self.id)) == '0'
 
 		if not _id_exist:
+			self.vault.sqlite.transaction_start()
+
 			for field in self.fields:
 				_field = encrypt(field, self.vault.password)
 				_value = encrypt(self.fields[field], self.vault.password)
 
 				self.vault.sqlite.exec_insert("INSERT INTO struct (id, field, value) VALUES ('{0}', '{1}', '{2}')".format(self.id, _field, _value))
+
+			self.vault.sqlite.transaction_commit()
 
 	def remove(self):
 		pass
