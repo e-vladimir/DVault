@@ -1,5 +1,7 @@
 from PySide.QtGui import *
+from PySide.QtCore import *
 from module_vault import TVault
+from glob import glob
 
 
 class TFormMain(QMainWindow):
@@ -9,8 +11,28 @@ class TFormMain(QMainWindow):
 		self.application = in_application
 		self.vault       = None
 
+		self.select_struct = None
+		self.select_record = None
+		self.select_field  = None
+
 		self._init_icons_()
 		self._init_ui()
+		self._init_events_()
+
+		self.gui_enabled_disabled()
+
+	def _icons_to_cb_(self, in_path, in_combobox):
+		in_combobox.clear()
+
+		icons_path = glob(in_path)
+
+		for icon_path in icons_path:
+			_icon = QIcon(icon_path)
+			_index = in_combobox.count()
+
+			in_combobox.addItem("")
+			in_combobox.setItemIcon(_index, _icon)
+			in_combobox.setItemData(_index, icon_path)
 
 	def _init_ui(self):
 		self.setMinimumSize(640, 480)
@@ -37,6 +59,10 @@ class TFormMain(QMainWindow):
 		self.btn_main_remove.setIcon(self.icon_list_remove)
 		self.btn_main_remove.setFlat(True)
 
+		self.cb_main_icons = QComboBox()
+		self.cb_main_icons.setMaximumWidth(50)
+		self._icons_to_cb_(self.application.PATH_ICONS + "/*.png", self.cb_main_icons)
+
 		self.toolbar_main = QHBoxLayout()
 		self.toolbar_main.setSpacing(0)
 		self.toolbar_main.addWidget(self.btn_main_add)
@@ -44,6 +70,7 @@ class TFormMain(QMainWindow):
 		self.toolbar_main.addWidget(self.btn_main_edit)
 		self.toolbar_main.addWidget(self.btn_main_remove)
 		self.toolbar_main.addStretch()
+		self.toolbar_main.addWidget(self.cb_main_icons)
 
 		self.layout_main = QVBoxLayout(self.panel_main)
 		self.layout_main.setContentsMargins(3, 3, 3, 3)
@@ -68,6 +95,7 @@ class TFormMain(QMainWindow):
 		self.btn_record_remove.setFlat(True)
 
 		self.edit_record_filter = QLineEdit()
+		self.edit_record_filter.setMinimumWidth(100)
 
 		self.toolbar_record = QHBoxLayout()
 		self.toolbar_record.setSpacing(0)
@@ -140,11 +168,21 @@ class TFormMain(QMainWindow):
 		self.icon_web         = QIcon(_folder + "/internet.png")
 		self.icon_key         = QIcon(_folder + "/key.png")
 
+	def _init_events_(self):
+		self.tree_main.currentItemChanged.connect(self.tree_main_onClick)
+		self.tree_records.currentItemChanged.connect(self.tree_record_onClick)
+		self.tree_fields.currentItemChanged.connect(self.tree_fields_onClick)
+
+		self.btn_main_add.clicked.connect(self.btn_main_add_onClick)
+		self.btn_main_addsub.clicked.connect(self.btn_main_addsub_onClick)
+
 	def _open_vault_(self):
 		self.show()
 		self.application.form_start.hide()
 
 		self.setWindowTitle("DVault    {0}".format(self.vault.filename))
+
+		self.load_struct()
 
 	def open_vault(self, in_filename):
 		_password, _result = QInputDialog().getText(self, "Пароль доступа", "Введите пароль доступа")
@@ -171,3 +209,79 @@ class TFormMain(QMainWindow):
 						self.close()
 			else:
 				QMessageBox.information(self, "Ошибка доступа", "Неправильный пароль, в доступе отказано")
+
+	def load_struct(self, in_parent_item=None):
+		if in_parent_item is None:
+			self.tree_main.clear()
+			struct_ids = self.vault.struct_get_list_by_id("-1")
+		else:
+			struct_ids = self.vault.struct_get_list_by_id(in_parent_item.data(0, Qt.UserRole))
+
+		for struct_id in struct_ids:
+			_name = self.vault.struct_get_name(struct_id)
+
+			if _name is not None:
+				_item = QTreeWidgetItem()
+				_item.setText(0, _name)
+				_item.setData(0, Qt.UserRole, struct_id)
+
+				if in_parent_item is None:
+					self.tree_main.addTopLevelItem(_item)
+				else:
+					in_parent_item.addChild(_item)
+
+				self.load_struct(_item)
+
+	def gui_enabled_disabled(self):
+		self.btn_main_addsub.setDisabled(self.select_struct is None)
+		self.btn_main_edit.setDisabled(self.select_struct is None)
+		self.btn_main_remove.setDisabled(self.select_struct is None)
+		self.cb_main_icons.setDisabled(self.select_struct is None)
+
+		self.btn_record_add.setDisabled(self.select_struct is None)
+		self.btn_record_edit.setDisabled(self.select_record is None)
+		self.btn_record_remove.setDisabled(self.select_record is None)
+
+		self.btn_fields_copy.setDisabled(self.select_record is None or self.select_field is None)
+		self.btn_fields_show.setDisabled(self.select_record is None or self.select_field is None)
+		self.btn_fields_web.setDisabled(self.select_record is None or self.select_field is None)
+
+	def tree_main_onClick(self):
+		self.select_struct = self.tree_main.currentItem()
+
+		self.gui_enabled_disabled()
+
+	def tree_record_onClick(self):
+		self.gui_enabled_disabled()
+
+	def tree_fields_onClick(self):
+		self.gui_enabled_disabled()
+
+	def btn_main_add_onClick(self):
+		if self.select_struct is not None:
+			parent_item = self.select_struct.parent()
+		else:
+			parent_item = None
+
+		if parent_item is None:
+			parent_id = "-1"
+			parent_name = "Верхний уровень"
+		else:
+			parent_id   = parent_item.data(0, Qt.UserRole)
+			parent_name = parent_item.text(0)
+
+		name, result = QInputDialog().getText(self, "Новая категория", "Введите имя новой категории\nСтруктура: {0}".format(parent_name))
+
+		if result:
+			self.vault.add_struct(name, parent_id)
+			self.load_struct()
+
+	def btn_main_addsub_onClick(self):
+		parent_id = self.select_struct.data(0, Qt.UserRole)
+		parent_name = self.select_struct.text(0)
+
+		name, result = QInputDialog().getText(self, "Новая категория", "Введите имя новой категории\nСтруктура: {0}".format(parent_name))
+
+		if result:
+			self.vault.add_struct(name, parent_id)
+			self.load_struct()
