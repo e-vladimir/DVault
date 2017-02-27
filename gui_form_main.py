@@ -235,6 +235,9 @@ class TFormMain(QMainWindow):
 
 					self.load_struct(_item)
 
+		self.tree_main.expandAll()
+		self.tree_main.sortByColumn(0, Qt.AscendingOrder)
+
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
 		self.btn_main_edit.setDisabled(self.select_struct is None)
@@ -251,6 +254,19 @@ class TFormMain(QMainWindow):
 
 	def tree_main_onClick(self):
 		self.select_struct = self.tree_main.currentItem()
+
+		if self.select_struct is not None:
+			icon = self.select_struct.icon(0)
+
+			for index in range(self.cb_main_icons.count()):
+				if self.cb_main_icons.itemIcon(index) == icon:
+					self.cb_main_icons.setCurrentIndex(index)
+
+					break
+			else:
+				self.cb_main_icons.setCurrentIndex(-1)
+		else:
+			self.cb_main_icons.setCurrentIndex(-1)
 
 		self.gui_enabled_disabled()
 
