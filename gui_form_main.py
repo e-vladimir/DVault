@@ -326,4 +326,4 @@ class TFormMain(QMainWindow):
 			self.vault.struct_item.set_field("icon", _new_icon)
 			self.vault.struct_item.save()
 
-			# print("Save id: {0}".format(self.vault.struct_item.id))
+			self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))
