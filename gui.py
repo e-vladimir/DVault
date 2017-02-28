@@ -1,8 +1,9 @@
 import os
 import sys
 from PySide.QtGui import *
-from gui_form_start import TFormStart
-from gui_form_main  import TFormMain
+from gui_form_start  import TFormStart
+from gui_form_main   import TFormMain
+from gui_form_record import TFormRecord
 
 
 class TApp(QApplication):
@@ -21,8 +22,9 @@ class TApp(QApplication):
 		self.PATH_ICONS_SMALL = "{0}/small".format(self.PATH_ICONS)
 
 	def _init_forms_(self):
-		self.form_start = TFormStart(self)
-		self.form_main  = TFormMain(self)
+		self.form_start  = TFormStart(self)
+		self.form_main   = TFormMain(self)
+		self.form_record = TFormRecord(self)
 
 app = TApp()
 app.form_start.show()

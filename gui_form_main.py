@@ -181,6 +181,8 @@ class TFormMain(QMainWindow):
 		self.btn_main_edit.clicked.connect(self.btn_main_edit_onClick)
 		self.btn_main_remove.clicked.connect(self.btn_main_remove_onClick)
 
+		self.btn_record_add.clicked.connect(self.btn_record_add_onClick)
+
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
 
 	def _open_vault_(self):
@@ -190,6 +192,7 @@ class TFormMain(QMainWindow):
 		self.setWindowTitle("DVault    {0}".format(self.vault.filename))
 
 		self.load_struct()
+		self.application.form_record.set_vault(self.vault)
 
 	def open_vault(self, in_filename):
 		_password, _result = QInputDialog().getText(self, "Пароль доступа", "Введите пароль доступа")
@@ -350,3 +353,9 @@ class TFormMain(QMainWindow):
 				self.vault.struct_item.save()
 
 				self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))
+
+	def btn_record_add_onClick(self):
+		self.vault.record_item.clear()
+		self.vault.record_item.set_field('name', "Новая запись")
+		self.application.form_record.load_record()
+
