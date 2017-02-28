@@ -97,13 +97,14 @@ class TRecordItem:
 		self.fields = dict()
 
 		self.fields['name']      = ''
-		# self.fields['icon']      = "folder"
 		self.fields['parent_id'] = '-1'
 
 	def save(self):
 		_id_exist = not self.vault.sqlite.get_single("SELECT COUNT(ID) FROM records WHERE id='{0}'".format(self.id)) == '0'
 
 		if not _id_exist:
+			self.id = self.get_next_id()
+
 			self.vault.sqlite.transaction_start()
 
 			for field in self.fields:
