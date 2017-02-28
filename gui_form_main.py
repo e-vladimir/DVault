@@ -176,6 +176,7 @@ class TFormMain(QMainWindow):
 
 		self.btn_main_add.clicked.connect(self.btn_main_add_onClick)
 		self.btn_main_addsub.clicked.connect(self.btn_main_addsub_onClick)
+		self.btn_main_edit.clicked.connect(self.btn_main_edit_onClick)
 		self.btn_main_remove.clicked.connect(self.btn_main_remove_onClick)
 
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
@@ -324,6 +325,16 @@ class TFormMain(QMainWindow):
 			self.vault.struct_item.delete()
 
 			self.load_struct()
+
+	def btn_main_edit_onClick(self):
+		old_name = self.vault.struct_item.get_field('name')
+		new_name, result = QInputDialog().getText(self, "Редактирование: {0}".format(old_name), "Укажите новое название категории {0}".format(old_name), text=old_name)
+
+		if result:
+			self.vault.struct_item.set_field('name', new_name)
+			self.vault.struct_item.save()
+
+			self.select_struct.setText(0, new_name)
 
 	def cb_main_icons_onChange(self):
 		if self.select_struct is not None:
