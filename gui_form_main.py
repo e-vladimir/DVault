@@ -176,6 +176,7 @@ class TFormMain(QMainWindow):
 
 		self.btn_main_add.clicked.connect(self.btn_main_add_onClick)
 		self.btn_main_addsub.clicked.connect(self.btn_main_addsub_onClick)
+		self.btn_main_remove.clicked.connect(self.btn_main_remove_onClick)
 
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
 
@@ -316,14 +317,23 @@ class TFormMain(QMainWindow):
 			self.vault.add_struct(name, parent_id)
 			self.load_struct()
 
+	def btn_main_remove_onClick(self):
+		delete = QMessageBox().information(self, "Удаление категории", "Подтвердите удаление категории: {0}".format(self.vault.struct_item.get_field('name')), QMessageBox.No | QMessageBox.Yes) == QMessageBox.Yes
+
+		if delete:
+			self.vault.struct_item.delete()
+
+			self.load_struct()
+
 	def cb_main_icons_onChange(self):
-		_index = self.cb_main_icons.currentIndex()
-		_new_icon = str(self.cb_main_icons.itemData(_index))
+		if self.select_struct is not None:
+			_index = self.cb_main_icons.currentIndex()
+			_new_icon = str(self.cb_main_icons.itemData(_index))
 
-		_old_icon = str(self.vault.struct_item.get_field('icon'))
+			_old_icon = str(self.vault.struct_item.get_field('icon'))
 
-		if not (_old_icon == _new_icon):
-			self.vault.struct_item.set_field("icon", _new_icon)
-			self.vault.struct_item.save()
+			if not (_old_icon == _new_icon):
+				self.vault.struct_item.set_field("icon", _new_icon)
+				self.vault.struct_item.save()
 
-			self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))
+				self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))

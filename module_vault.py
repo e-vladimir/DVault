@@ -39,8 +39,15 @@ class TStructItem:
 
 			self.save()
 
-	def remove(self):
-		pass
+	def delete(self):
+		_id = self.id
+		substructs = self.vault.struct_get_list_by_id(self.id)
+
+		for id in substructs:
+			self.load(id)
+			self.delete()
+
+		self.vault.sqlite.exec_delete("DELETE FROM struct WHERE id='{0}'".format(_id))
 
 	def clear(self):
 		self.id     = None
