@@ -171,6 +171,8 @@ class TFormMain(QMainWindow):
 
 	def _init_events_(self):
 		self.tree_main.currentItemChanged.connect(self.tree_main_onClick)
+		self.tree_main.doubleClicked.connect(self.btn_main_edit_onClick)
+
 		self.tree_records.currentItemChanged.connect(self.tree_record_onClick)
 		self.tree_fields.currentItemChanged.connect(self.tree_fields_onClick)
 
