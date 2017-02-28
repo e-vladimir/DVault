@@ -10,19 +10,76 @@ def decrypt(in_message, in_password):
 	return str(simplecrypto.decrypt(in_message, in_password), 'utf-8')
 
 
+class TVaultItem:
+	def __init__(self, in_vault=None):
+		self.id = None
+		self.fields = dict()
+
+		self.vault = in_vault
+
+	def chech_id(self, in_id=None):
+		if in_id is None:
+			_id = self.id
+		else:
+			_id = in_id
+
+		_count = self.vault.sqlite.get_single("SELECT COUNT(id) "
+		                                      "FROM items "
+		                                      "WHERE (id='{0}')".format(_id))
+
+		return not _count == 0
+
+	def save(self):
+		pass
+
+	def load(self, in_id=None):
+		pass
+
+	def clear(self):
+		pass
+
+	def get_child_list(self):
+		pass
+
+	def get_next_id(self):
+		pass
+
+	def clear_fields(self):
+		self.fields = dict()
+
+	def set_field(self, in_field, in_value):
+		self.fields[in_field] = in_value
+
+	def get_field(self, in_field):
+		if in_field in self.fields:
+			return self.fields[in_field]
+		else:
+			return None
+
+	def get_type(self):
+		return self.get_field('type')
+
+	def get_name(self):
+		return self.get_field('name')
+
+	def get_icon(self):
+		return self.get_field('icon')
+
+
 class TStructItem:
 	def __init__(self, in_vault=None):
 		self.vault = in_vault
 
-		self.id   = None
+		self.id = None
 		self.fields = dict()
 
-		self.fields['name']      = ''
+		self.fields['name'] = ''
 		# self.fields['icon']      = "folder"
 		self.fields['parent_id'] = '-1'
 
 	def save(self):
-		_id_exist = not self.vault.sqlite.get_single("SELECT COUNT(ID) FROM struct WHERE id='{0}'".format(self.id)) == '0'
+		_id_exist = not self.vault.sqlite.get_single(
+			"SELECT COUNT(ID) FROM struct WHERE id='{0}'".format(self.id)) == '0'
 
 		if not _id_exist:
 			self.vault.sqlite.transaction_start()
@@ -31,7 +88,9 @@ class TStructItem:
 				_field = encrypt(field, self.vault.password)
 				_value = encrypt(self.fields[field], self.vault.password)
 
-				self.vault.sqlite.exec_insert("INSERT INTO struct (id, field, value) VALUES ('{0}', '{1}', '{2}')".format(self.id, _field, _value))
+				self.vault.sqlite.exec_insert(
+					"INSERT INTO struct (id, field, value) VALUES ('{0}', '{1}', '{2}')".format(self.id, _field,
+					                                                                            _value))
 
 			self.vault.sqlite.transaction_commit()
 		else:
@@ -50,7 +109,7 @@ class TStructItem:
 		self.vault.sqlite.exec_delete("DELETE FROM struct WHERE id='{0}'".format(_id))
 
 	def clear(self):
-		self.id     = None
+		self.id = None
 		self.fields = dict()
 
 	def load(self, in_id=None):
@@ -93,14 +152,15 @@ class TRecordItem:
 	def __init__(self, in_vault=None):
 		self.vault = in_vault
 
-		self.id   = None
+		self.id = None
 		self.fields = dict()
 
-		self.fields['name']      = ''
+		self.fields['name'] = ''
 		self.fields['parent_id'] = '-1'
 
 	def save(self):
-		_id_exist = not self.vault.sqlite.get_single("SELECT COUNT(ID) FROM records WHERE id='{0}'".format(self.id)) == '0'
+		_id_exist = not self.vault.sqlite.get_single(
+			"SELECT COUNT(ID) FROM records WHERE id='{0}'".format(self.id)) == '0'
 
 		if not _id_exist:
 			self.id = self.get_next_id()
@@ -111,7 +171,9 @@ class TRecordItem:
 				_field = encrypt(field, self.vault.password)
 				_value = encrypt(self.fields[field], self.vault.password)
 
-				self.vault.sqlite.exec_insert("INSERT INTO records (id, field, value) VALUES ('{0}', '{1}', '{2}')".format(self.id, _field, _value))
+				self.vault.sqlite.exec_insert(
+					"INSERT INTO records (id, field, value) VALUES ('{0}', '{1}', '{2}')".format(self.id, _field,
+					                                                                             _value))
 
 			self.vault.sqlite.transaction_commit()
 		else:
@@ -130,7 +192,7 @@ class TRecordItem:
 		self.vault.sqlite.exec_delete("DELETE FROM records WHERE id='{0}'".format(_id))
 
 	def clear(self):
-		self.id     = None
+		self.id = None
 		self.fields = dict()
 
 	def load(self, in_id=None):
@@ -171,7 +233,7 @@ class TRecordItem:
 
 class TVault:
 	def __init__(self):
-		self.sqlite   = None
+		self.sqlite = None
 		self.password = ""
 		self.filename = ""
 
@@ -179,7 +241,7 @@ class TVault:
 		self.record_item = TRecordItem(self)
 
 	def _init_db_(self, in_filename):
-		self.sqlite   = TSQLiteConnection(in_filename)
+		self.sqlite = TSQLiteConnection(in_filename)
 		self.filename = in_filename
 
 		_sql = "CREATE TABLE IF NOT EXISTS sys_info (field TEXT, value TEXT)"
@@ -196,7 +258,7 @@ class TVault:
 
 		_sql = "SELECT value FROM sys_info WHERE field='pass_hash'"
 		_pass_hash_from_db = self.sqlite.get_single(_sql)
-		_pass_hash         = simplecrypto.sha1(in_password)
+		_pass_hash = simplecrypto.sha1(in_password)
 
 		if _pass_hash_from_db is None:
 			return None
@@ -212,7 +274,8 @@ class TVault:
 		self.sqlite.transaction_start()
 
 		self.sqlite.exec_delete("DELETE FROM sys_info WHERE field='pass_hash'")
-		self.sqlite.exec_insert("INSERT INTO sys_info (field, value) VALUES ('pass_hash', '{0}')".format(sha1(in_password)))
+		self.sqlite.exec_insert(
+			"INSERT INTO sys_info (field, value) VALUES ('pass_hash', '{0}')".format(sha1(in_password)))
 
 		self.sqlite.transaction_commit()
 
@@ -230,7 +293,7 @@ class TVault:
 		self.sqlite.exec_select("SELECT id, field, value FROM struct ORDER BY id")
 
 		while self.sqlite.query_select.next():
-			_id    = self.sqlite.query_select.value(0)
+			_id = self.sqlite.query_select.value(0)
 			_field = decrypt(self.sqlite.query_select.value(1), self.password)
 			_value = decrypt(self.sqlite.query_select.value(2), self.password)
 
