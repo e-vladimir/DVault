@@ -2,6 +2,7 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 from module_vault import TVault
 from glob import glob
+from os.path import basename
 
 
 class TFormMain(QMainWindow):
@@ -32,7 +33,7 @@ class TFormMain(QMainWindow):
 
 			in_combobox.addItem("")
 			in_combobox.setItemIcon(_index, _icon)
-			in_combobox.setItemData(_index, icon_path)
+			in_combobox.setItemData(_index, basename(icon_path))
 
 	def _init_ui(self):
 		self.setMinimumSize(640, 480)
@@ -175,6 +176,10 @@ class TFormMain(QMainWindow):
 
 		self.btn_main_add.clicked.connect(self.btn_main_add_onClick)
 		self.btn_main_addsub.clicked.connect(self.btn_main_addsub_onClick)
+		self.btn_main_edit.clicked.connect(self.btn_main_edit_onClick)
+		self.btn_main_remove.clicked.connect(self.btn_main_remove_onClick)
+
+		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
 
 	def _open_vault_(self):
 		self.show()
@@ -224,9 +229,15 @@ class TFormMain(QMainWindow):
 				_name = self.vault.struct_item.get_field("name")
 
 				if _name is not None:
+					_icon_filename = self.vault.struct_item.get_field('icon')
+
 					_item = QTreeWidgetItem()
 					_item.setText(0, _name)
 					_item.setData(0, Qt.UserRole, struct_id)
+
+					if _icon_filename is not None:
+						_icon = QIcon("{0}/{1}".format(self.application.PATH_ICONS, _icon_filename))
+						_item.setIcon(0, _icon)
 
 					if in_parent_item is None:
 						self.tree_main.addTopLevelItem(_item)
@@ -234,6 +245,9 @@ class TFormMain(QMainWindow):
 						in_parent_item.addChild(_item)
 
 					self.load_struct(_item)
+
+		self.tree_main.expandAll()
+		self.tree_main.sortByColumn(0, Qt.AscendingOrder)
 
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
@@ -251,6 +265,21 @@ class TFormMain(QMainWindow):
 
 	def tree_main_onClick(self):
 		self.select_struct = self.tree_main.currentItem()
+
+		if self.select_struct is not None:
+			self.vault.struct_item.load(self.select_struct.data(0, Qt.UserRole))
+
+			icon = self.vault.struct_item.get_field('icon')
+
+			for index in range(self.cb_main_icons.count()):
+				if self.cb_main_icons.itemData(index) == icon:
+					self.cb_main_icons.setCurrentIndex(index)
+
+					break
+			else:
+				self.cb_main_icons.setCurrentIndex(-1)
+		else:
+			self.cb_main_icons.setCurrentIndex(-1)
 
 		self.gui_enabled_disabled()
 
@@ -288,3 +317,34 @@ class TFormMain(QMainWindow):
 		if result:
 			self.vault.add_struct(name, parent_id)
 			self.load_struct()
+
+	def btn_main_remove_onClick(self):
+		delete = QMessageBox().information(self, "Удаление категории", "Подтвердите удаление категории: {0}".format(self.vault.struct_item.get_field('name')), QMessageBox.No | QMessageBox.Yes) == QMessageBox.Yes
+
+		if delete:
+			self.vault.struct_item.delete()
+
+			self.load_struct()
+
+	def btn_main_edit_onClick(self):
+		old_name = self.vault.struct_item.get_field('name')
+		new_name, result = QInputDialog().getText(self, "Редактирование: {0}".format(old_name), "Укажите новое название категории {0}".format(old_name), text=old_name)
+
+		if result:
+			self.vault.struct_item.set_field('name', new_name)
+			self.vault.struct_item.save()
+
+			self.select_struct.setText(0, new_name)
+
+	def cb_main_icons_onChange(self):
+		if self.select_struct is not None:
+			_index = self.cb_main_icons.currentIndex()
+			_new_icon = str(self.cb_main_icons.itemData(_index))
+
+			_old_icon = str(self.vault.struct_item.get_field('icon'))
+
+			if not (_old_icon == _new_icon):
+				self.vault.struct_item.set_field("icon", _new_icon)
+				self.vault.struct_item.save()
+
+				self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))
