@@ -254,6 +254,8 @@ class TFormMain(QMainWindow):
 		self.tree_main.expandAll()
 		self.tree_main.sortByColumn(0, Qt.AscendingOrder)
 
+		self.get_selected_struct()
+
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
 		self.btn_main_edit.setDisabled(self.select_struct is None)
@@ -268,7 +270,7 @@ class TFormMain(QMainWindow):
 		self.btn_fields_show.setDisabled(self.select_record is None or self.select_field is None)
 		self.btn_fields_web.setDisabled(self.select_record is None or self.select_field is None)
 
-	def tree_main_onClick(self):
+	def get_selected_struct(self):
 		self.select_struct = self.tree_main.currentItem()
 
 		if self.select_struct is not None:
@@ -287,6 +289,9 @@ class TFormMain(QMainWindow):
 			self.cb_main_icons.setCurrentIndex(-1)
 
 		self.gui_enabled_disabled()
+
+	def tree_main_onClick(self):
+		self.get_selected_struct()
 
 	def tree_record_onClick(self):
 		self.gui_enabled_disabled()
