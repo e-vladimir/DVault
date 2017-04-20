@@ -17,6 +17,7 @@ class TVault:
 		self.filename = ""
 
 		self.struct_item = TStructItem(self)
+		self.record_item = TRecordItem(self)
 
 	def _init_db_(self, in_filename):
 		self.sqlite = TSQLiteConnection(in_filename)
@@ -58,11 +59,9 @@ class TVault:
 		self.sqlite.transaction_commit()
 
 	def add_struct(self, in_name, in_parent_id="-1"):
-		self.struct_item.clear()
-		self.struct_item.id = self.struct_item.get_next_id()
+		self.struct_item.clear(True)
 		self.struct_item.set_field('name', in_name)
 		self.struct_item.set_field('parent_id', in_parent_id)
-		self.struct_item.set_field('type', 'struct')
 
 		self.struct_item.save()
 
@@ -75,6 +74,19 @@ class TVault:
 			self.struct_item.load(_id)
 
 			if (self.struct_item.is_struct()) and (self.struct_item.get_parent_id() == str(in_parent_id)):
+				result.append(_id)
+
+		return result
+
+	def record_get_list_by_id(self, in_parent_id):
+		result = []
+
+		list_id = self.sqlite.get_multiple("SELECT DISTINCT id FROM struct ORDER BY id")
+
+		for _id in list_id:
+			self.record_item.load(_id)
+
+			if (self.record_item.is_record()) and (self.record_item.get_parent_id() == str(in_parent_id)):
 				result.append(_id)
 
 		return result
@@ -94,8 +106,10 @@ class TVaultItem:
 		self.fields['parent_id'] = '-1'
 
 	def save(self):
-		_id_exist = not self.vault.sqlite.get_single(
-			"SELECT COUNT(ID) FROM struct WHERE id='{0}'".format(self.id)) == '0'
+		if self.id is None:
+			self.id = self.get_next_id()
+
+		_id_exist = not self.vault.sqlite.get_single("SELECT COUNT(ID) FROM struct WHERE id='{0}'".format(self.id)) == '0'
 
 		if not _id_exist:
 			self.vault.sqlite.transaction_start()
@@ -123,8 +137,10 @@ class TVaultItem:
 
 		self.vault.sqlite.exec_delete("DELETE FROM struct WHERE id='{0}'".format(_id))
 
-	def clear(self):
-		self.id = None
+	def clear(self, id_clear=False):
+		if id_clear:
+			self.id = None
+
 		self.fields = dict()
 
 	def load(self, in_id=None):
@@ -165,6 +181,9 @@ class TVaultItem:
 	def is_struct(self):
 		return self.get_field("type") == "struct"
 
+	def is_record(self):
+		return self.get_field("type") == "record"
+
 	def get_parent_id(self):
 		return self.get_field('parent_id')
 
@@ -175,19 +194,19 @@ class TStructItem(TVaultItem):
 
 		self.set_field("type", 'struct')
 
-	def clear(self):
-		super(TStructItem, self).clear()
+	def clear(self, id_clear=False):
+		super(TStructItem, self).clear(id_clear)
 
 		self.set_field("type", "struct")
 
 
 class TRecordItem(TVaultItem):
 	def __init__(self, in_vault=None):
-		super(TStructItem, self).__init__(in_vault)
+		super(TRecordItem, self).__init__(in_vault)
 
 		self.set_field("type", 'record')
 
-	def clear(self):
-		super(TStructItem, self).clear()
+	def clear(self, id_clear=False):
+		super(TRecordItem, self).clear(id_clear)
 
 		self.set_field("type", "record")

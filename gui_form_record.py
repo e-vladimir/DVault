@@ -1,6 +1,7 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
 
+
 class TFormRecord(QMainWindow):
 	def __init__(self, in_application=None):
 		super(TFormRecord, self).__init__()
@@ -125,14 +126,9 @@ class TFormRecord(QMainWindow):
 		pass
 
 	def btn_save_onClick(self):
-		self.vault.record_item.fields = dict()
+		self.vault.record_item.clear()
 		self.vault.record_item.set_field('name', self.edit_name.text())
 		self.vault.record_item.set_field('parent_id', self.vault.struct_item.id)
-
-		for index in range(self.table_fields.rowCount()):
-			_field = self.table_fields.item(index, 0).text()
-			_value = self.table_fields.item(index, 1).text()
-			self.vault.record_item.set_field(_field, _value)
 
 		self.vault.record_item.save()
 

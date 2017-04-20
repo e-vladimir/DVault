@@ -13,7 +13,7 @@ class TFormMain(QMainWindow):
 		self.vault       = None
 
 		self.select_struct = None
-		self.select_record = None
+		self.select_struct = None
 		self.select_field  = None
 
 		self._init_icons_()
@@ -95,6 +95,10 @@ class TFormMain(QMainWindow):
 		self.btn_record_remove.setIcon(self.icon_list_remove)
 		self.btn_record_remove.setFlat(True)
 
+		self.cb_record_icons = QComboBox()
+		self.cb_record_icons.setMaximumWidth(50)
+		self._icons_to_cb_(self.application.PATH_ICONS + "/*.png", self.cb_record_icons)
+
 		self.edit_record_filter = QLineEdit()
 		self.edit_record_filter.setMinimumWidth(100)
 
@@ -103,6 +107,8 @@ class TFormMain(QMainWindow):
 		self.toolbar_record.addWidget(self.btn_record_add)
 		self.toolbar_record.addWidget(self.btn_record_edit)
 		self.toolbar_record.addWidget(self.btn_record_remove)
+		self.toolbar_record.addStretch()
+		self.toolbar_record.addWidget(self.cb_record_icons)
 		self.toolbar_record.addStretch()
 		self.toolbar_record.addWidget(self.edit_record_filter)
 
@@ -254,7 +260,35 @@ class TFormMain(QMainWindow):
 		self.tree_main.expandAll()
 		self.tree_main.sortByColumn(0, Qt.AscendingOrder)
 
-		self.get_selected_struct()
+		self.read_selected_struct()
+
+	def load_records(self):
+		self.tree_records.clear()
+
+		if self.select_struct is not None:
+			record_ids = self.vault.record_get_list_by_id(self.select_struct.data(0, Qt.UserRole))
+
+			if record_ids is not None:
+				for record_id in record_ids:
+					self.vault.record_item.load(record_id)
+
+					_name = self.vault.record_item.get_field("name")
+
+					if _name is not None:
+						_icon_filename = self.vault.record_item.get_field('icon')
+
+						_item = QTreeWidgetItem()
+						_item.setText(0, _name)
+						_item.setData(0, Qt.UserRole, record_id)
+
+						if _icon_filename is not None:
+							_icon = QIcon("{0}/{1}".format(self.application.PATH_ICONS, _icon_filename))
+							_item.setIcon(0, _icon)
+
+						self.tree_records.addTopLevelItem(_item)
+
+			self.tree_records.expandAll()
+			self.tree_records.sortByColumn(0, Qt.AscendingOrder)
 
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
@@ -263,14 +297,14 @@ class TFormMain(QMainWindow):
 		self.cb_main_icons.setDisabled(self.select_struct is None)
 
 		self.btn_record_add.setDisabled(self.select_struct is None)
-		self.btn_record_edit.setDisabled(self.select_record is None)
-		self.btn_record_remove.setDisabled(self.select_record is None)
+		self.btn_record_edit.setDisabled(self.select_struct is None)
+		self.btn_record_remove.setDisabled(self.select_struct is None)
 
-		self.btn_fields_copy.setDisabled(self.select_record is None or self.select_field is None)
-		self.btn_fields_show.setDisabled(self.select_record is None or self.select_field is None)
-		self.btn_fields_web.setDisabled(self.select_record is None or self.select_field is None)
+		self.btn_fields_copy.setDisabled(self.select_struct is None or self.select_field is None)
+		self.btn_fields_show.setDisabled(self.select_struct is None or self.select_field is None)
+		self.btn_fields_web.setDisabled(self.select_struct is None or self.select_field is None)
 
-	def get_selected_struct(self):
+	def read_selected_struct(self):
 		self.select_struct = self.tree_main.currentItem()
 
 		if self.select_struct is not None:
@@ -290,8 +324,30 @@ class TFormMain(QMainWindow):
 
 		self.gui_enabled_disabled()
 
+		self.load_records()
+
+	def read_selected_record(self):
+		self.select_struct = self.tree_records.currentItem()
+
+		if self.select_struct is not None:
+			self.vault.record_item.load(self.select_struct.data(0, Qt.UserRole))
+
+			icon = self.vault.record_item.get_field('icon')
+
+			for index in range(self.cb_record_icons.count()):
+				if self.cb_record_icons.itemData(index) == icon:
+					self.cb_record_icons.setCurrentIndex(index)
+
+					break
+			else:
+				self.cb_main_icons.setCurrentIndex(-1)
+		else:
+			self.cb_main_icons.setCurrentIndex(-1)
+
+		self.gui_enabled_disabled()
+
 	def tree_main_onClick(self):
-		self.get_selected_struct()
+		self.read_selected_struct()
 
 	def tree_record_onClick(self):
 		self.gui_enabled_disabled()
