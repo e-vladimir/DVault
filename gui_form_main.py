@@ -180,6 +180,7 @@ class TFormMain(QMainWindow):
 		self.tree_main.doubleClicked.connect(self.btn_main_edit_onClick)
 
 		self.tree_records.currentItemChanged.connect(self.tree_record_onClick)
+		self.tree_records.doubleClicked.connect(self.btn_record_edit_onClick)
 		self.tree_fields.currentItemChanged.connect(self.tree_fields_onClick)
 
 		self.btn_main_add.clicked.connect(self.btn_main_add_onClick)

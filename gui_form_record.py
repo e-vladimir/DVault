@@ -2,6 +2,9 @@ from PySide.QtGui import *
 from PySide.QtCore import *
 
 
+SYSTEM_FIELDS = ["icon", "type", "name", "parent_id"]
+
+
 class TFormRecord(QMainWindow):
 	def __init__(self, in_application=None):
 		super(TFormRecord, self).__init__()
@@ -99,6 +102,24 @@ class TFormRecord(QMainWindow):
 		_struct_name = self.vault.struct_item.get_field('name')
 		_record_name = self.vault.record_item.get_field('name')
 
+		self.table_fields.setRowCount(0)
+
+		for field, value in self.vault.record_item.fields.items():
+			if field not in SYSTEM_FIELDS:
+				item_field = QTableWidgetItem()
+				item_field.setText(field)
+				item_value = QTableWidgetItem()
+				item_value.setText(value)
+
+				index = self.table_fields.rowCount()
+
+				self.table_fields.setRowCount(self.table_fields.rowCount() + 1)
+
+				self.table_fields.setItem(index, 0, item_field)
+				self.table_fields.setItem(index, 1, item_value)
+
+		self.resizeColumns()
+
 		self.setWindowTitle("{0}-{1}".format(_struct_name, _record_name))
 		self.edit_name.setText(_record_name)
 
@@ -130,10 +151,17 @@ class TFormRecord(QMainWindow):
 		self.vault.record_item.set_field('parent_id', self.vault.struct_item.id)
 
 		for _index in range(self.table_fields.rowCount()):
-			item_field = self.table_fields.item(_index, 0).text()
-			item_value = self.table_fields.item(_index, 1).text()
+			item_field = self.table_fields.item(_index, 0)
+			item_value = self.table_fields.item(_index, 1)
 
-			self.vault.record_item.set_field(item_field, item_value)
+			field = item_field.text()
+
+			if item_value is None:
+				value = ""
+			else:
+				value = item_value.text()
+
+			self.vault.record_item.set_field(field, value)
 
 		self.vault.record_item.save()
 
