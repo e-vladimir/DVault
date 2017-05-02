@@ -430,7 +430,7 @@ class TFormMain(QMainWindow):
 				self.select_record.setIcon(0, self.cb_record_icons.itemIcon(self.cb_record_icons.currentIndex()))
 
 	def btn_record_add_onClick(self):
-		self.vault.record_item.clear()
+		self.vault.record_item.clear(True)
 		self.vault.record_item.set_field('name', "Новая запись")
 		self.application.form_record.load_record()
 
