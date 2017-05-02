@@ -8,7 +8,6 @@ class TFormRecord(QMainWindow):
 
 		self.application = in_application
 		self.vault       = None
-		self.id_record   = None
 
 		self._init_icons_()
 		self._init_ui_()
@@ -129,6 +128,12 @@ class TFormRecord(QMainWindow):
 	def btn_save_onClick(self):
 		self.vault.record_item.set_field('name', self.edit_name.text())
 		self.vault.record_item.set_field('parent_id', self.vault.struct_item.id)
+
+		for _index in range(self.table_fields.rowCount()):
+			item_field = self.table_fields.item(_index, 0).text()
+			item_value = self.table_fields.item(_index, 1).text()
+
+			self.vault.record_item.set_field(item_field, item_value)
 
 		self.vault.record_item.save()
 

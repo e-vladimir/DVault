@@ -188,6 +188,7 @@ class TFormMain(QMainWindow):
 		self.btn_main_remove.clicked.connect(self.btn_main_remove_onClick)
 
 		self.btn_record_add.clicked.connect(self.btn_record_add_onClick)
+		self.btn_record_edit.clicked.connect(self.btn_record_edit_onClick)
 
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
 		self.cb_record_icons.currentIndexChanged.connect(self.cb_record_icons_onChange)
@@ -434,3 +435,6 @@ class TFormMain(QMainWindow):
 		self.vault.record_item.set_field('name', "Новая запись")
 		self.application.form_record.load_record()
 
+	def btn_record_edit_onClick(self):
+		self.vault.record_item.load(self.select_record.data(0, Qt.UserRole))
+		self.application.form_record.load_record()
