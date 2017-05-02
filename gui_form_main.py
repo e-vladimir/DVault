@@ -13,7 +13,7 @@ class TFormMain(QMainWindow):
 		self.vault       = None
 
 		self.select_struct = None
-		self.select_struct = None
+		self.select_record = None
 		self.select_field  = None
 
 		self._init_icons_()
@@ -190,6 +190,7 @@ class TFormMain(QMainWindow):
 		self.btn_record_add.clicked.connect(self.btn_record_add_onClick)
 
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
+		self.cb_record_icons.currentIndexChanged.connect(self.cb_record_icons_onChange)
 
 	def _open_vault_(self):
 		self.show()
@@ -327,10 +328,10 @@ class TFormMain(QMainWindow):
 		self.load_records()
 
 	def read_selected_record(self):
-		self.select_struct = self.tree_records.currentItem()
+		self.select_record = self.tree_records.currentItem()
 
-		if self.select_struct is not None:
-			self.vault.record_item.load(self.select_struct.data(0, Qt.UserRole))
+		if self.select_record is not None:
+			self.vault.record_item.load(self.select_record.data(0, Qt.UserRole))
 
 			icon = self.vault.record_item.get_field('icon')
 
@@ -340,9 +341,9 @@ class TFormMain(QMainWindow):
 
 					break
 			else:
-				self.cb_main_icons.setCurrentIndex(-1)
+				self.cb_record_icons.setCurrentIndex(-1)
 		else:
-			self.cb_main_icons.setCurrentIndex(-1)
+			self.cb_record_icons.setCurrentIndex(-1)
 
 		self.gui_enabled_disabled()
 
@@ -350,7 +351,7 @@ class TFormMain(QMainWindow):
 		self.read_selected_struct()
 
 	def tree_record_onClick(self):
-		self.gui_enabled_disabled()
+		self.read_selected_record()
 
 	def tree_fields_onClick(self):
 		self.gui_enabled_disabled()
@@ -414,6 +415,19 @@ class TFormMain(QMainWindow):
 				self.vault.struct_item.save()
 
 				self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))
+
+	def cb_record_icons_onChange(self):
+		if self.select_record is not None:
+			_index = self.cb_record_icons.currentIndex()
+			_new_icon = str(self.cb_record_icons.itemData(_index))
+
+			_old_icon = str(self.vault.record_item.get_field('icon'))
+
+			if not (_old_icon == _new_icon):
+				self.vault.record_item.set_field("icon", _new_icon)
+				self.vault.record_item.save()
+
+				self.select_record.setIcon(0, self.cb_record_icons.itemIcon(self.cb_record_icons.currentIndex()))
 
 	def btn_record_add_onClick(self):
 		self.vault.record_item.clear()
