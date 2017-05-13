@@ -1,8 +1,6 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
-
-
-SYSTEM_FIELDS = ["icon", "type", "name", "parent_id"]
+from module_vault import SYSTEM_FIELDS
 
 
 class TFormRecord(QMainWindow):
@@ -104,8 +102,12 @@ class TFormRecord(QMainWindow):
 
 		self.table_fields.setRowCount(0)
 
-		for field, value in self.vault.record_item.fields.items():
+		fields = list(self.vault.record_item.fields)
+		fields.sort()
+
+		for field in fields:
 			if field not in SYSTEM_FIELDS:
+				value = self.vault.record_item.fields[field]
 				item_field = QTableWidgetItem()
 				item_field.setText(field)
 				item_value = QTableWidgetItem()
@@ -120,13 +122,15 @@ class TFormRecord(QMainWindow):
 
 		self.resizeColumns()
 
-		self.setWindowTitle("{0}-{1}".format(_struct_name, _record_name))
+		self.setWindowTitle("{0} [{1}]".format(_record_name, _struct_name))
 		self.edit_name.setText(_record_name)
 
 		self.show()
 
 	def resizeColumns(self):
-		self.table_fields.sortByColumn(0, Qt.AscendingOrder)
+		self.table_fields.setSortingEnabled(True)
+		# self.table_fields.sortItems(0, Qt.AscendingOrder)
+		# self.table_fields.sortByColumn(0, Qt.AscendingOrder)
 		self.table_fields.resizeColumnsToContents()
 		self.table_fields.resizeRowsToContents()
 

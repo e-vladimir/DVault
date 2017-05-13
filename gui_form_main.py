@@ -1,6 +1,7 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
 from module_vault import TVault
+from module_vault import SYSTEM_FIELDS
 from glob import glob
 from os.path import basename
 
@@ -347,7 +348,20 @@ class TFormMain(QMainWindow):
 		else:
 			self.cb_record_icons.setCurrentIndex(-1)
 
+		self.show_fields()
+
 		self.gui_enabled_disabled()
+
+	def show_fields(self):
+		self.tree_fields.clear()
+
+		for field, value in self.vault.record_item.fields.items():
+			if field not in SYSTEM_FIELDS:
+				item = QTreeWidgetItem()
+				item.setText(0, field)
+				item.setText(1, value)
+
+				self.tree_fields.addTopLevelItem(item)
 
 	def tree_main_onClick(self):
 		self.read_selected_struct()

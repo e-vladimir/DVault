@@ -1,6 +1,8 @@
 from module_sqlite import TSQLiteConnection
 import simplecrypto
 
+SYSTEM_FIELDS = ["icon", "type", "name", "parent_id"]
+
 
 def encrypt(in_message, in_password):
 	return str(simplecrypto.encrypt(in_message, in_password))
