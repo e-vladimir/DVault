@@ -326,9 +326,10 @@ class TFormMain(QMainWindow):
 		else:
 			self.cb_main_icons.setCurrentIndex(-1)
 
-		self.gui_enabled_disabled()
-
 		self.load_records()
+		self.read_selected_record()
+
+		self.gui_enabled_disabled()
 
 	def read_selected_record(self):
 		self.select_record = self.tree_records.currentItem()
@@ -346,6 +347,7 @@ class TFormMain(QMainWindow):
 			else:
 				self.cb_record_icons.setCurrentIndex(-1)
 		else:
+			self.vault.record_item.clear(True)
 			self.cb_record_icons.setCurrentIndex(-1)
 
 		self.show_fields()
@@ -354,14 +356,24 @@ class TFormMain(QMainWindow):
 
 	def show_fields(self):
 		self.tree_fields.clear()
+		self.tree_fields.setHeaderLabels(["Field", "Value"])
 
-		for field, value in self.vault.record_item.fields.items():
+		fields = list(self.vault.record_item.fields)
+		fields.sort()
+
+		for field in fields:
 			if field not in SYSTEM_FIELDS:
-				item = QTreeWidgetItem()
-				item.setText(0, field)
-				item.setText(1, value)
+				value = self.vault.record_item.fields[field]
 
-				self.tree_fields.addTopLevelItem(item)
+				item_field = QTreeWidgetItem()
+				item_field.setText(0, field)
+				item_field.setText(1, value)
+
+				self.tree_fields.addTopLevelItem(item_field)
+
+		self.tree_fields.resizeColumnToContents(0)
+
+		self.gui_enabled_disabled()
 
 	def tree_main_onClick(self):
 		self.read_selected_struct()
