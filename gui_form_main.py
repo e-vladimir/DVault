@@ -135,13 +135,8 @@ class TFormMain(QMainWindow):
 		self.btn_fields_web.setIcon(self.icon_web)
 		self.btn_fields_web.setFlat(True)
 
-		self.btn_fields_show = QPushButton()
-		self.btn_fields_show.setIcon(self.icon_key)
-		self.btn_fields_show.setFlat(True)
-
 		self.toolbar_fields = QHBoxLayout()
 		self.toolbar_fields.setSpacing(0)
-		self.toolbar_fields.addWidget(self.btn_fields_show)
 		self.toolbar_fields.addWidget(self.btn_fields_copy)
 		self.toolbar_fields.addWidget(self.btn_fields_web)
 		self.toolbar_fields.addStretch()
@@ -174,7 +169,6 @@ class TFormMain(QMainWindow):
 
 		self.icon_copy        = QIcon(_folder + "/copy.png")
 		self.icon_web         = QIcon(_folder + "/internet.png")
-		self.icon_key         = QIcon(_folder + "/key.png")
 
 	def _init_events_(self):
 		self.tree_main.currentItemChanged.connect(self.tree_main_onClick)
@@ -305,7 +299,6 @@ class TFormMain(QMainWindow):
 		self.btn_record_remove.setDisabled(self.select_struct is None)
 
 		self.btn_fields_copy.setDisabled(self.select_struct is None or self.select_field is None)
-		self.btn_fields_show.setDisabled(self.select_struct is None or self.select_field is None)
 		self.btn_fields_web.setDisabled(self.select_struct is None or self.select_field is None)
 
 	def read_selected_struct(self):
