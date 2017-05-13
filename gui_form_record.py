@@ -151,6 +151,9 @@ class TFormRecord(QMainWindow):
 		pass
 
 	def btn_save_onClick(self):
+		icon = self.vault.record_item.fields["icon"]
+		self.vault.record_item.clear()
+		self.vault.record_item.set_field("icon", icon)
 		self.vault.record_item.set_field('name', self.edit_name.text())
 		self.vault.record_item.set_field('parent_id', self.vault.struct_item.id)
 

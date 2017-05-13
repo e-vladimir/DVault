@@ -82,6 +82,7 @@ class TFormMain(QMainWindow):
 
 		# Записи
 		self.tree_records = QTreeWidget()
+		self.tree_records.setIndentation(0)
 		self.tree_records.setHeaderHidden(True)
 
 		self.btn_record_add = QPushButton()
@@ -123,6 +124,7 @@ class TFormMain(QMainWindow):
 
 		# Поля
 		self.tree_fields = QTreeWidget()
+		self.tree_fields.setIndentation(0)
 		self.tree_fields.setHeaderHidden(True)
 
 		self.panel_fields = QWidget()
@@ -169,6 +171,12 @@ class TFormMain(QMainWindow):
 
 		self.icon_copy        = QIcon(_folder + "/copy.png")
 		self.icon_web         = QIcon(_folder + "/internet.png")
+		self.icon_key         = QIcon(_folder + "/key.png")
+		self.icon_user        = QIcon(_folder + "/user_gray.png")
+		self.icon_note        = QIcon(_folder + "/note.png")
+		self.icon_internet    = QIcon(_folder + "/internet.png")
+		self.icon_phone       = QIcon(_folder + "/phone.png")
+		self.icon_email       = QIcon(_folder + "/email.png")
 
 	def _init_events_(self):
 		self.tree_main.currentItemChanged.connect(self.tree_main_onClick)
@@ -361,6 +369,19 @@ class TFormMain(QMainWindow):
 				item_field = QTreeWidgetItem()
 				item_field.setText(0, field)
 				item_field.setText(1, value)
+
+				if field in ["Пароль", "Код"]:
+					item_field.setIcon(0, self.icon_key)
+				elif field in ["Имя", "Логин", "Пользователь"]:
+					item_field.setIcon(0, self.icon_user)
+				elif field in ["Почта", "Email", "E-Mail", "email"]:
+					item_field.setIcon(0, self.icon_email)
+				elif field in ["Сайт", "Ссылка"]:
+					item_field.setIcon(0, self.icon_internet)
+				elif field in ["Телефон"]:
+					item_field.setIcon(0, self.icon_phone)
+				elif field in ["Примечания", "Заметка"]:
+					item_field.setIcon(0, self.icon_note)
 
 				self.tree_fields.addTopLevelItem(item_field)
 
