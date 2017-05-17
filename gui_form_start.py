@@ -40,7 +40,7 @@ class TFormStart(QMainWindow):
 		self.is_list_rename = QIcon("{0}/list-edit.png".format(self.application.PATH_ICONS_SMALL))
 
 	def _init_ui_(self):
-		self.setWindowTitle("DVault    {0}".format(self.application.PATH_COMMON))
+		self.setWindowTitle("DVault - {0} - {1}".format(self.application.VERSION, self.application.PATH_COMMON))
 
 		self.setMinimumSize(640, 480)
 

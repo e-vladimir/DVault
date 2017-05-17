@@ -201,7 +201,7 @@ class TFormMain(QMainWindow):
 		self.show()
 		self.application.form_start.hide()
 
-		self.setWindowTitle("DVault    {0}".format(self.vault.filename))
+		self.setWindowTitle("DVault - {0} - {1}".format(self.application.VERSION, self.vault.filename))
 
 		self.load_struct()
 		self.application.form_record.set_vault(self.vault)
@@ -474,6 +474,7 @@ class TFormMain(QMainWindow):
 	def btn_record_add_onClick(self):
 		self.vault.record_item.clear(True)
 		self.vault.record_item.set_field('name', "Новая запись")
+		self.vault.record_item.set_field('icon', "")
 		self.application.form_record.load_record()
 
 	def btn_record_edit_onClick(self):

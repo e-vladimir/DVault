@@ -10,6 +10,8 @@ class TApp(QApplication):
 	PATH_COMMON = ""
 	PATH_ICONS = ""
 
+	VERSION = "0.17.05.17"
+
 	def __init__(self):
 		super(TApp, self).__init__(sys.argv)
 
