@@ -368,19 +368,20 @@ class TFormMain(QMainWindow):
 
 				item_field = QTreeWidgetItem()
 				item_field.setText(0, field)
-				item_field.setText(1, value)
+				item_field.setText(1, "***")
+				item_field.setData(1, Qt.UserRole, value)
 
 				if field in ["Пароль", "Код"]:
 					item_field.setIcon(0, self.icon_key)
 				elif field in ["Имя", "Логин", "Пользователь"]:
 					item_field.setIcon(0, self.icon_user)
-				elif field in ["Почта", "Email", "E-Mail", "email"]:
+				elif field in ["Почта", "Email", "E-Mail", "email", "e-mail"]:
 					item_field.setIcon(0, self.icon_email)
 				elif field in ["Сайт", "Ссылка"]:
 					item_field.setIcon(0, self.icon_internet)
 				elif field in ["Телефон"]:
 					item_field.setIcon(0, self.icon_phone)
-				elif field in ["Примечания", "Заметка"]:
+				elif field in ["Примечания", "Заметка", "Примечание"]:
 					item_field.setIcon(0, self.icon_note)
 
 				self.tree_fields.addTopLevelItem(item_field)
