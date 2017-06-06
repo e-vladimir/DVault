@@ -137,10 +137,15 @@ class TFormMain(QMainWindow):
 		self.btn_fields_web.setIcon(self.icon_web)
 		self.btn_fields_web.setFlat(True)
 
+		self.btn_fields_key = QPushButton()
+		self.btn_fields_key.setIcon(self.icon_key)
+		self.btn_fields_key.setFlat(True)
+
 		self.toolbar_fields = QHBoxLayout()
 		self.toolbar_fields.setSpacing(0)
 		self.toolbar_fields.addWidget(self.btn_fields_copy)
 		self.toolbar_fields.addWidget(self.btn_fields_web)
+		self.toolbar_fields.addWidget(self.btn_fields_key)
 		self.toolbar_fields.addStretch()
 
 		self.layout_fields = QVBoxLayout(self.panel_fields)
