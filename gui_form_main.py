@@ -198,6 +198,7 @@ class TFormMain(QMainWindow):
 
 		self.btn_record_add.clicked.connect(self.btn_record_add_onClick)
 		self.btn_record_edit.clicked.connect(self.btn_record_edit_onClick)
+		self.btn_fields_key.clicked.connect(self.btn_fields_show_onClick)
 
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
 		self.cb_record_icons.currentIndexChanged.connect(self.cb_record_icons_onChange)
@@ -486,3 +487,11 @@ class TFormMain(QMainWindow):
 	def btn_record_edit_onClick(self):
 		self.vault.record_item.load(self.select_record.data(0, Qt.UserRole))
 		self.application.form_record.load_record()
+
+	def btn_fields_show_onClick(self):
+		for index in range(self.tree_fields.topLevelItemCount()):
+			item = self.tree_fields.topLevelItem(index)
+
+			psw = item.data(1, Qt.UserRole)
+
+			item.setText(1, psw)
