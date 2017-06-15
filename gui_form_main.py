@@ -271,6 +271,7 @@ class TFormMain(QMainWindow):
 
 	def load_records(self):
 		self.tree_records.clear()
+		self.tree_records.setHeaderLabels(["Запись", "Примечание"])
 
 		if self.select_struct is not None:
 			record_ids = self.vault.record_get_list_by_id(self.select_struct.data(0, Qt.UserRole))
@@ -280,12 +281,14 @@ class TFormMain(QMainWindow):
 					self.vault.record_item.load(record_id)
 
 					_name = self.vault.record_item.get_field("name")
+					_note = self.vault.record_item.get_field("note")
 
 					if _name is not None:
 						_icon_filename = self.vault.record_item.get_field('icon')
 
 						_item = QTreeWidgetItem()
 						_item.setText(0, _name)
+						_item.setText(1, _note)
 						_item.setData(0, Qt.UserRole, record_id)
 
 						if _icon_filename is not None:
@@ -294,8 +297,9 @@ class TFormMain(QMainWindow):
 
 						self.tree_records.addTopLevelItem(_item)
 
-			self.tree_records.expandAll()
-			self.tree_records.sortByColumn(0, Qt.AscendingOrder)
+		self.tree_records.expandAll()
+		self.tree_records.resizeColumnToContents(0)
+		self.tree_records.setAlternatingRowColors(True)
 
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
