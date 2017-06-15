@@ -52,6 +52,9 @@ class TFormRecord(QMainWindow):
 		self.toolbar_main.addWidget(self.btn_cancel)
 
 		self.edit_name      = QLineEdit()
+		self.edit_name.setPlaceholderText("Название")
+		self.edit_note      = QLineEdit()
+		self.edit_note.setPlaceholderText("Примечание")
 		self.widget_central = QWidget()
 		self.layout_main    = QVBoxLayout(self.widget_central)
 		self.layout_main.setContentsMargins(3, 3, 3, 3)
@@ -62,6 +65,7 @@ class TFormRecord(QMainWindow):
 
 		self.layout_main.addLayout(self.toolbar_main)
 		self.layout_main.addWidget(self.edit_name)
+		self.layout_main.addWidget(self.edit_note)
 		# self.layout_main.addStretch()
 		self.layout_main.addWidget(self.table_fields)
 
@@ -123,7 +127,8 @@ class TFormRecord(QMainWindow):
 		self.resizeColumns()
 
 		self.setWindowTitle("{0} [{1}]".format(_record_name, _struct_name))
-		self.edit_name.setText(_record_name)
+		self.edit_name.setText(self.vault.record_item.get_field('name'))
+		self.edit_note.setText(self.vault.record_item.get_field('note'))
 
 		self.show()
 
@@ -155,6 +160,7 @@ class TFormRecord(QMainWindow):
 		self.vault.record_item.clear()
 		self.vault.record_item.set_field("icon", icon)
 		self.vault.record_item.set_field('name', self.edit_name.text())
+		self.vault.record_item.set_field('note', self.edit_note.text())
 		self.vault.record_item.set_field('parent_id', self.vault.struct_item.id)
 
 		for _index in range(self.table_fields.rowCount()):
