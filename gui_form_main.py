@@ -218,7 +218,7 @@ class TFormMain(QMainWindow):
 				self.vault.password = _password
 				self._open_vault_()
 			elif _init_result is None:
-				_pass2, _result = QInputDialog.getText(self, "Установка пароля", "Для хранилища не задан пароль доступа.\nВведите повторно пароль, указанный при входе, \nчто бы использовать его для этого хранилища.")
+				_pass2, _result = QInputDialog.getText(self, "Установка пароля", "Для хранилища не задан пароль доступа.\nВведите повторно пароль, указанный при входе, \nчто бы использовать его для этого хранилища.", echo=QLineEdit.Password)
 
 				if _result:
 					if _pass2 == _password:
