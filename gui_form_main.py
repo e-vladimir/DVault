@@ -101,9 +101,6 @@ class TFormMain(QMainWindow):
 		self.cb_record_icons.setMaximumWidth(50)
 		self._icons_to_cb_(self.application.PATH_ICONS + "/*.png", self.cb_record_icons)
 
-		self.edit_record_filter = QLineEdit()
-		self.edit_record_filter.setMinimumWidth(100)
-
 		self.toolbar_record = QHBoxLayout()
 		self.toolbar_record.setSpacing(0)
 		self.toolbar_record.addWidget(self.btn_record_add)
@@ -111,8 +108,6 @@ class TFormMain(QMainWindow):
 		self.toolbar_record.addWidget(self.btn_record_remove)
 		self.toolbar_record.addStretch()
 		self.toolbar_record.addWidget(self.cb_record_icons)
-		self.toolbar_record.addStretch()
-		self.toolbar_record.addWidget(self.edit_record_filter)
 
 		self.panel_records = QWidget()
 
@@ -213,7 +208,7 @@ class TFormMain(QMainWindow):
 		self.application.form_record.set_vault(self.vault)
 
 	def open_vault(self, in_filename):
-		_password, _result = QInputDialog().getText(self, "Пароль доступа", "Введите пароль доступа")
+		_password, _result = QInputDialog().getText(self, "Пароль доступа", "Введите пароль доступа", echo=QLineEdit.Password)
 
 		if _result:
 			self.vault = TVault()
@@ -393,6 +388,7 @@ class TFormMain(QMainWindow):
 				self.tree_fields.addTopLevelItem(item_field)
 
 		self.tree_fields.resizeColumnToContents(0)
+		self.tree_fields.setAlternatingRowColors(True)
 
 		self.gui_enabled_disabled()
 
