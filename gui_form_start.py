@@ -22,7 +22,7 @@ class TFormStart(QMainWindow):
 
 		self._init_icons_()
 		self._init_ui_()
-		self._init_menu_()
+		self._init_toolbar_()
 		self._init_events_()
 
 		self.load_vaults_list()
@@ -40,7 +40,7 @@ class TFormStart(QMainWindow):
 		self.is_list_rename = QIcon("{0}/list-edit.png".format(self.application.PATH_ICONS_SMALL))
 
 	def _init_ui_(self):
-		self.setWindowTitle("DVault    {0}".format(self.application.PATH_COMMON))
+		self.setWindowTitle("DVault - {0} - {1}".format(self.application.VERSION, self.application.PATH_COMMON))
 
 		self.setMinimumSize(640, 480)
 
@@ -52,6 +52,18 @@ class TFormStart(QMainWindow):
 
 		self.statusBar().showMessage("Ins - добавить, Enter/Двойной клик - открыть", 0)
 
+	def _init_toolbar_(self):
+		self.action_list_add    = QAction(self.is_list_add, "Добавить", None)
+		self.action_list_remove = QAction(self.is_list_remove, "Удалить", None)
+		self.action_list_rename = QAction(self.is_list_rename, "Переименовать", None)
+
+		self.toolbar_main = self.addToolBar("Действия")
+
+		self.toolbar_main.addAction(self.action_list_add)
+		self.toolbar_main.addAction(self.action_list_rename)
+		self.toolbar_main.addSeparator()
+		self.toolbar_main.addAction(self.action_list_remove)
+
 	def _init_events_(self):
 		self.action_list_add.triggered.connect(self.event_list_add)
 		self.action_list_remove.triggered.connect(self.event_list_remove)
@@ -59,18 +71,6 @@ class TFormStart(QMainWindow):
 
 		self.table_vaults.currentItemChanged.connect(self.table_vaults_onCurentItemChanged)
 		self.table_vaults.doubleClicked.connect(self.event_list_open)
-
-	def _init_menu_(self):
-		self.menu_list = self.menuBar().addMenu("Список")
-
-		self.action_list_add = QAction(self.is_list_add, "Добавить", None)
-		self.action_list_remove = QAction(self.is_list_remove, "Удалить", None)
-		self.action_list_rename = QAction(self.is_list_rename, "Переименовать", None)
-
-		self.menu_list.addAction(self.action_list_add)
-		self.menu_list.addAction(self.action_list_remove)
-		self.menu_list.addSeparator()
-		self.menu_list.addAction(self.action_list_rename)
 
 	def load_vaults_list(self):
 		self.table_vaults.clear()

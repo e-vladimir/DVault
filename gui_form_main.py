@@ -1,6 +1,7 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
 from module_vault import TVault
+from module_vault import SYSTEM_FIELDS
 from glob import glob
 from os.path import basename
 
@@ -81,6 +82,7 @@ class TFormMain(QMainWindow):
 
 		# Записи
 		self.tree_records = QTreeWidget()
+		self.tree_records.setIndentation(0)
 		self.tree_records.setHeaderHidden(True)
 
 		self.btn_record_add = QPushButton()
@@ -95,8 +97,9 @@ class TFormMain(QMainWindow):
 		self.btn_record_remove.setIcon(self.icon_list_remove)
 		self.btn_record_remove.setFlat(True)
 
-		self.edit_record_filter = QLineEdit()
-		self.edit_record_filter.setMinimumWidth(100)
+		self.cb_record_icons = QComboBox()
+		self.cb_record_icons.setMaximumWidth(50)
+		self._icons_to_cb_(self.application.PATH_ICONS + "/*.png", self.cb_record_icons)
 
 		self.toolbar_record = QHBoxLayout()
 		self.toolbar_record.setSpacing(0)
@@ -104,7 +107,7 @@ class TFormMain(QMainWindow):
 		self.toolbar_record.addWidget(self.btn_record_edit)
 		self.toolbar_record.addWidget(self.btn_record_remove)
 		self.toolbar_record.addStretch()
-		self.toolbar_record.addWidget(self.edit_record_filter)
+		self.toolbar_record.addWidget(self.cb_record_icons)
 
 		self.panel_records = QWidget()
 
@@ -116,6 +119,7 @@ class TFormMain(QMainWindow):
 
 		# Поля
 		self.tree_fields = QTreeWidget()
+		self.tree_fields.setIndentation(0)
 		self.tree_fields.setHeaderHidden(True)
 
 		self.panel_fields = QWidget()
@@ -128,15 +132,15 @@ class TFormMain(QMainWindow):
 		self.btn_fields_web.setIcon(self.icon_web)
 		self.btn_fields_web.setFlat(True)
 
-		self.btn_fields_show = QPushButton()
-		self.btn_fields_show.setIcon(self.icon_key)
-		self.btn_fields_show.setFlat(True)
+		self.btn_fields_key = QPushButton()
+		self.btn_fields_key.setIcon(self.icon_key)
+		self.btn_fields_key.setFlat(True)
 
 		self.toolbar_fields = QHBoxLayout()
 		self.toolbar_fields.setSpacing(0)
-		self.toolbar_fields.addWidget(self.btn_fields_show)
 		self.toolbar_fields.addWidget(self.btn_fields_copy)
 		self.toolbar_fields.addWidget(self.btn_fields_web)
+		self.toolbar_fields.addWidget(self.btn_fields_key)
 		self.toolbar_fields.addStretch()
 
 		self.layout_fields = QVBoxLayout(self.panel_fields)
@@ -168,10 +172,18 @@ class TFormMain(QMainWindow):
 		self.icon_copy        = QIcon(_folder + "/copy.png")
 		self.icon_web         = QIcon(_folder + "/internet.png")
 		self.icon_key         = QIcon(_folder + "/key.png")
+		self.icon_user        = QIcon(_folder + "/user_gray.png")
+		self.icon_note        = QIcon(_folder + "/note.png")
+		self.icon_internet    = QIcon(_folder + "/internet.png")
+		self.icon_phone       = QIcon(_folder + "/phone.png")
+		self.icon_email       = QIcon(_folder + "/email.png")
 
 	def _init_events_(self):
 		self.tree_main.currentItemChanged.connect(self.tree_main_onClick)
+		self.tree_main.doubleClicked.connect(self.btn_main_edit_onClick)
+
 		self.tree_records.currentItemChanged.connect(self.tree_record_onClick)
+		self.tree_records.doubleClicked.connect(self.btn_record_edit_onClick)
 		self.tree_fields.currentItemChanged.connect(self.tree_fields_onClick)
 
 		self.btn_main_add.clicked.connect(self.btn_main_add_onClick)
@@ -179,18 +191,24 @@ class TFormMain(QMainWindow):
 		self.btn_main_edit.clicked.connect(self.btn_main_edit_onClick)
 		self.btn_main_remove.clicked.connect(self.btn_main_remove_onClick)
 
+		self.btn_record_add.clicked.connect(self.btn_record_add_onClick)
+		self.btn_record_edit.clicked.connect(self.btn_record_edit_onClick)
+		self.btn_fields_key.clicked.connect(self.btn_fields_show_onClick)
+
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
+		self.cb_record_icons.currentIndexChanged.connect(self.cb_record_icons_onChange)
 
 	def _open_vault_(self):
 		self.show()
 		self.application.form_start.hide()
 
-		self.setWindowTitle("DVault    {0}".format(self.vault.filename))
+		self.setWindowTitle("DVault - {0} - {1}".format(self.application.VERSION, self.vault.filename))
 
 		self.load_struct()
+		self.application.form_record.set_vault(self.vault)
 
 	def open_vault(self, in_filename):
-		_password, _result = QInputDialog().getText(self, "Пароль доступа", "Введите пароль доступа")
+		_password, _result = QInputDialog().getText(self, "Пароль доступа", "Введите пароль доступа", echo=QLineEdit.Password)
 
 		if _result:
 			self.vault = TVault()
@@ -200,7 +218,7 @@ class TFormMain(QMainWindow):
 				self.vault.password = _password
 				self._open_vault_()
 			elif _init_result is None:
-				_pass2, _result = QInputDialog.getText(self, "Установка пароля", "Для хранилища не задан пароль доступа.\nВведите повторно пароль, указанный при входе, \nчто бы использовать его для этого хранилища.")
+				_pass2, _result = QInputDialog.getText(self, "Установка пароля", "Для хранилища не задан пароль доступа.\nВведите повторно пароль, указанный при входе, \nчто бы использовать его для этого хранилища.", echo=QLineEdit.Password)
 
 				if _result:
 					if _pass2 == _password:
@@ -249,6 +267,40 @@ class TFormMain(QMainWindow):
 		self.tree_main.expandAll()
 		self.tree_main.sortByColumn(0, Qt.AscendingOrder)
 
+		self.read_selected_struct()
+
+	def load_records(self):
+		self.tree_records.clear()
+		self.tree_records.setHeaderLabels(["Запись", "Примечание"])
+
+		if self.select_struct is not None:
+			record_ids = self.vault.record_get_list_by_id(self.select_struct.data(0, Qt.UserRole))
+
+			if record_ids is not None:
+				for record_id in record_ids:
+					self.vault.record_item.load(record_id)
+
+					_name = self.vault.record_item.get_field("name")
+					_note = self.vault.record_item.get_field("note")
+
+					if _name is not None:
+						_icon_filename = self.vault.record_item.get_field('icon')
+
+						_item = QTreeWidgetItem()
+						_item.setText(0, _name)
+						_item.setText(1, _note)
+						_item.setData(0, Qt.UserRole, record_id)
+
+						if _icon_filename is not None:
+							_icon = QIcon("{0}/{1}".format(self.application.PATH_ICONS, _icon_filename))
+							_item.setIcon(0, _icon)
+
+						self.tree_records.addTopLevelItem(_item)
+
+		self.tree_records.expandAll()
+		self.tree_records.resizeColumnToContents(0)
+		self.tree_records.setAlternatingRowColors(True)
+
 	def gui_enabled_disabled(self):
 		self.btn_main_addsub.setDisabled(self.select_struct is None)
 		self.btn_main_edit.setDisabled(self.select_struct is None)
@@ -256,14 +308,13 @@ class TFormMain(QMainWindow):
 		self.cb_main_icons.setDisabled(self.select_struct is None)
 
 		self.btn_record_add.setDisabled(self.select_struct is None)
-		self.btn_record_edit.setDisabled(self.select_record is None)
-		self.btn_record_remove.setDisabled(self.select_record is None)
+		self.btn_record_edit.setDisabled(self.select_struct is None)
+		self.btn_record_remove.setDisabled(self.select_struct is None)
 
-		self.btn_fields_copy.setDisabled(self.select_record is None or self.select_field is None)
-		self.btn_fields_show.setDisabled(self.select_record is None or self.select_field is None)
-		self.btn_fields_web.setDisabled(self.select_record is None or self.select_field is None)
+		self.btn_fields_copy.setDisabled(self.select_struct is None or self.select_field is None)
+		self.btn_fields_web.setDisabled(self.select_struct is None or self.select_field is None)
 
-	def tree_main_onClick(self):
+	def read_selected_struct(self):
 		self.select_struct = self.tree_main.currentItem()
 
 		if self.select_struct is not None:
@@ -281,10 +332,75 @@ class TFormMain(QMainWindow):
 		else:
 			self.cb_main_icons.setCurrentIndex(-1)
 
+		self.load_records()
+		self.read_selected_record()
+
 		self.gui_enabled_disabled()
 
-	def tree_record_onClick(self):
+	def read_selected_record(self):
+		self.select_record = self.tree_records.currentItem()
+
+		if self.select_record is not None:
+			self.vault.record_item.load(self.select_record.data(0, Qt.UserRole))
+
+			icon = self.vault.record_item.get_field('icon')
+
+			for index in range(self.cb_record_icons.count()):
+				if self.cb_record_icons.itemData(index) == icon:
+					self.cb_record_icons.setCurrentIndex(index)
+
+					break
+			else:
+				self.cb_record_icons.setCurrentIndex(-1)
+		else:
+			self.vault.record_item.clear(True)
+			self.cb_record_icons.setCurrentIndex(-1)
+
+		self.show_fields()
+
 		self.gui_enabled_disabled()
+
+	def show_fields(self):
+		self.tree_fields.clear()
+		self.tree_fields.setHeaderLabels(["Field", "Value"])
+
+		fields = list(self.vault.record_item.fields)
+		fields.sort()
+
+		for field in fields:
+			if field not in SYSTEM_FIELDS:
+				value = self.vault.record_item.fields[field]
+
+				item_field = QTreeWidgetItem()
+				item_field.setText(0, field)
+				item_field.setText(1, "***")
+				item_field.setData(1, Qt.UserRole, value)
+
+				if field in ["Пароль", "Код"]:
+					item_field.setIcon(0, self.icon_key)
+				elif field in ["Имя", "Логин", "Пользователь"]:
+					item_field.setIcon(0, self.icon_user)
+				elif field in ["Почта", "Email", "E-Mail", "email", "e-mail"]:
+					item_field.setIcon(0, self.icon_email)
+				elif field in ["Сайт", "Ссылка"]:
+					item_field.setIcon(0, self.icon_internet)
+				elif field in ["Телефон"]:
+					item_field.setIcon(0, self.icon_phone)
+				elif field in ["Примечания", "Заметка", "Примечание"]:
+					item_field.setIcon(0, self.icon_note)
+
+				self.tree_fields.addTopLevelItem(item_field)
+
+		self.tree_fields.resizeColumnToContents(0)
+		self.tree_fields.setAlternatingRowColors(True)
+
+		self.gui_enabled_disabled()
+
+	def tree_main_onClick(self):
+		self.read_selected_struct()
+
+	def tree_record_onClick(self):
+		self.read_selected_record()
 
 	def tree_fields_onClick(self):
 		self.gui_enabled_disabled()
@@ -348,3 +464,34 @@ class TFormMain(QMainWindow):
 				self.vault.struct_item.save()
 
 				self.select_struct.setIcon(0, self.cb_main_icons.itemIcon(self.cb_main_icons.currentIndex()))
+
+	def cb_record_icons_onChange(self):
+		if self.select_record is not None:
+			_index = self.cb_record_icons.currentIndex()
+			_new_icon = str(self.cb_record_icons.itemData(_index))
+
+			_old_icon = str(self.vault.record_item.get_field('icon'))
+
+			if not (_old_icon == _new_icon):
+				self.vault.record_item.set_field("icon", _new_icon)
+				self.vault.record_item.save()
+
+				self.select_record.setIcon(0, self.cb_record_icons.itemIcon(self.cb_record_icons.currentIndex()))
+
+	def btn_record_add_onClick(self):
+		self.vault.record_item.clear(True)
+		self.vault.record_item.set_field('name', "Новая запись")
+		self.vault.record_item.set_field('icon', "")
+		self.application.form_record.load_record()
+
+	def btn_record_edit_onClick(self):
+		self.vault.record_item.load(self.select_record.data(0, Qt.UserRole))
+		self.application.form_record.load_record()
+
+	def btn_fields_show_onClick(self):
+		for index in range(self.tree_fields.topLevelItemCount()):
+			item = self.tree_fields.topLevelItem(index)
+
+			psw = item.data(1, Qt.UserRole)
+
+			item.setText(1, psw)
