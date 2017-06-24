@@ -140,9 +140,17 @@ class TFormRecord(QMainWindow):
 		self.table_fields.resizeRowsToContents()
 
 	def btn_field_append_onClick(self):
-		self.table_fields.setRowCount(self.table_fields.rowCount() + 1)
+		field_name, result = QInputDialog.getText(self, "Имя поля", "Укажите имя поля")
 
-		self.resizeColumns()
+		if result:
+			self.table_fields.setRowCount(self.table_fields.rowCount() + 1)
+
+			item = QTableWidgetItem()
+			item.setText(field_name)
+
+			self.table_fields.setItem(self.table_fields.rowCount() - 1, 0, item)
+
+			self.resizeColumns()
 
 	def btn_field_remove_onClick(self):
 		self.table_fields.removeRow(self.table_fields.currentRow())
