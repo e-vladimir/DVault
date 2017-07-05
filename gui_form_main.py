@@ -6,6 +6,48 @@ from glob import glob
 from os.path import basename
 
 
+class QTreeWidgetDragDrop(QTreeWidget):
+	def __init__(self):
+		super(QTreeWidgetDragDrop, self).__init__()
+
+		self.setDropIndicatorShown(True)
+		self.setAutoExpandDelay(500)
+		self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+		self.setDragDropMode(QAbstractItemView.InternalMove)
+		self.setDragEnabled(True)
+
+		self.item_from_drag = None
+		self.item_to_drop   = None
+
+	def dragEnterEvent(self, in_event):
+		super(QTreeWidgetDragDrop, self).dragEnterEvent(in_event)
+
+		item = self.currentItem()
+
+		if item is not None:
+			self.item_from_drag = item
+
+	def dropEvent(self, in_event):
+		index = self.indexAt(in_event.pos())
+		item = self.itemFromIndex(index)
+
+		if item is not None:
+			self.item_to_drop = item
+
+			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} в {1}?".format(self.item_from_drag.text(0), self.item_to_drop.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+				id_from = self.item_from_drag.data(0, Qt.UserRole)
+				id_to   = self.item_to_drop.data(0, Qt.UserRole)
+
+				form  = self.parent().parent().parent()
+				vault = form.vault
+
+				vault.record_item.load(id_from)
+				vault.record_item.set_field("parent_id", id_to)
+				vault.record_item.save()
+
+				form.load_struct()
+
+
 class TFormMain(QMainWindow):
 	def __init__(self, in_application=None):
 		super(TFormMain, self).__init__()
@@ -16,6 +58,9 @@ class TFormMain(QMainWindow):
 		self.select_struct = None
 		self.select_record = None
 		self.select_field  = None
+
+		self.item_from_drag = None
+		self.item_to_drop   = None
 
 		self._init_icons_()
 		self._init_ui()
@@ -40,7 +85,7 @@ class TFormMain(QMainWindow):
 		self.setMinimumSize(640, 480)
 
 		# Структура
-		self.tree_main = QTreeWidget()
+		self.tree_main = QTreeWidgetDragDrop()
 		self.tree_main.setHeaderHidden(True)
 
 		self.panel_main  = QWidget()
@@ -118,7 +163,7 @@ class TFormMain(QMainWindow):
 		self.layout_record.addWidget(self.tree_records)
 
 		# Поля
-		self.tree_fields = QTreeWidget()
+		self.tree_fields = QTreeWidgetDragDrop()
 		self.tree_fields.setIndentation(0)
 		self.tree_fields.setHeaderHidden(True)
 
@@ -495,3 +540,6 @@ class TFormMain(QMainWindow):
 			psw = item.data(1, Qt.UserRole)
 
 			item.setText(1, psw)
+
+	def treeRecords_onStartDrag(self):
+		print("Drag")
