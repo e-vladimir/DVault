@@ -29,7 +29,7 @@ class QTreeWidgetDragDrop(QTreeWidget):
 
 	def dropEvent(self, in_event):
 		index = self.indexAt(in_event.pos())
-		item = self.itemFromIndex(index)
+		item  = self.itemFromIndex(index)
 
 		if item is not None:
 			self.item_to_drop = item
@@ -37,6 +37,19 @@ class QTreeWidgetDragDrop(QTreeWidget):
 			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} в {1}?".format(self.item_from_drag.text(0), self.item_to_drop.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
 				id_from = self.item_from_drag.data(0, Qt.UserRole)
 				id_to   = self.item_to_drop.data(0, Qt.UserRole)
+
+				form  = self.parent().parent().parent()
+				vault = form.vault
+
+				vault.record_item.load(id_from)
+				vault.record_item.set_field("parent_id", id_to)
+				vault.record_item.save()
+
+				form.load_struct()
+		else:
+			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} на верхний уровень?".format(self.item_from_drag.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+				id_from = self.item_from_drag.data(0, Qt.UserRole)
+				id_to   = "-1"
 
 				form  = self.parent().parent().parent()
 				vault = form.vault
