@@ -24,9 +24,7 @@ class QTreeWidgetDragDrop(QTreeWidget):
 	def dragEnterEvent(self, in_event):
 		super(QTreeWidgetDragDrop, self).dragEnterEvent(in_event)
 
-		if self.form.drag_from is None:
-			self.form.drag_from = self
-
+		if in_event.source() is self:
 			item = self.currentItem()
 
 			if item is not None:
@@ -49,28 +47,22 @@ class QTreeWidgetDragDrop(QTreeWidget):
 				vault.record_item.set_field("parent_id", id_to)
 				vault.record_item.save()
 
-				if self.form.drag_from is self:
-					self.form.load_struct()
-				else:
-					self.form.load_records()
+				self.form.load_struct()
+				self.form.load_records()
 		else:
-			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} на верхний уровень?".format(self.item_from_drag.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-				id_from = self.item_from_drag.data(0, Qt.UserRole)
-				id_to   = "-1"
+			if in_event.source() is self:
+				if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} на верхний уровень?".format(self.form.item_from_drag.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+					id_from = self.form.item_from_drag.data(0, Qt.UserRole)
+					id_to   = "-1"
 
-				form  = self.parent().parent().parent()
-				vault = form.vault
+					vault = self.form.vault
 
-				vault.record_item.load(id_from)
-				vault.record_item.set_field("parent_id", id_to)
-				vault.record_item.save()
+					vault.record_item.load(id_from)
+					vault.record_item.set_field("parent_id", id_to)
+					vault.record_item.save()
 
-				if self.form.drag_from is self:
 					self.form.load_struct()
-				else:
 					self.form.load_records()
-
-		self.form.drag_from = None
 
 
 class QTreeWidgetDrag(QTreeWidget):
@@ -89,9 +81,7 @@ class QTreeWidgetDrag(QTreeWidget):
 		self.form = in_form
 
 	def dragEnterEvent(self, in_event):
-		if self.form.drag_from is None:
-			self.form.drag_from = self
-
+		if in_event.source() is self:
 			super(QTreeWidgetDrag, self).dragEnterEvent(in_event)
 
 			item = self.currentItem()
@@ -113,8 +103,6 @@ class TFormMain(QMainWindow):
 
 		self.item_from_drag = None
 		self.item_to_drop   = None
-
-		self.drag_from    = None
 
 		self._init_icons_()
 		self._init_ui()
