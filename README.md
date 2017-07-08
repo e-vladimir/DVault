@@ -6,5 +6,9 @@
 * python 3.x
 * python3-PySide
 * SimpleCrypto
+* SQLite3
+
+Если ругается на отсутствие драйвера SQLite:
+* libqt4-sql-sqlite
 
 Рабочее название проекта: DVault (DataVault)
