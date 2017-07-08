@@ -89,6 +89,8 @@ class QTreeWidgetDrag(QTreeWidget):
 			if item is not None:
 				self.form.item_from_drag = item
 
+	def dragMoveEvent(self, in_event):
+		in_event.ignore()
 
 class TFormMain(QMainWindow):
 	def __init__(self, in_application=None):
@@ -207,7 +209,7 @@ class TFormMain(QMainWindow):
 		self.layout_record.addWidget(self.tree_records)
 
 		# Поля
-		self.tree_fields = QTreeWidgetDragDrop()
+		self.tree_fields = QTreeWidget()
 		self.tree_fields.setIndentation(0)
 		self.tree_fields.setHeaderHidden(True)
 
