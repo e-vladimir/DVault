@@ -13,39 +13,46 @@ class QTreeWidgetDragDrop(QTreeWidget):
 		self.setDropIndicatorShown(True)
 		self.setAutoExpandDelay(500)
 		self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-		self.setDragDropMode(QAbstractItemView.InternalMove)
+		self.setDragDropMode(QAbstractItemView.DragDrop)
 		self.setDragEnabled(True)
 
-		self.item_from_drag = None
-		self.item_to_drop   = None
+		self.form = None
+
+	def setForm(self, in_form=None):
+		self.form = in_form
 
 	def dragEnterEvent(self, in_event):
 		super(QTreeWidgetDragDrop, self).dragEnterEvent(in_event)
 
-		item = self.currentItem()
+		if self.form.drag_from is None:
+			self.form.drag_from = self
 
-		if item is not None:
-			self.item_from_drag = item
+			item = self.currentItem()
+
+			if item is not None:
+				self.form.item_from_drag = item
 
 	def dropEvent(self, in_event):
 		index = self.indexAt(in_event.pos())
 		item  = self.itemFromIndex(index)
 
 		if item is not None:
-			self.item_to_drop = item
+			self.form.item_to_drop = item
 
-			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} в {1}?".format(self.item_from_drag.text(0), self.item_to_drop.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-				id_from = self.item_from_drag.data(0, Qt.UserRole)
-				id_to   = self.item_to_drop.data(0, Qt.UserRole)
+			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} в {1}?".format(self.form.item_from_drag.text(0), self.form.item_to_drop.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+				id_from = self.form.item_from_drag.data(0, Qt.UserRole)
+				id_to   = self.form.item_to_drop.data(0, Qt.UserRole)
 
-				form  = self.parent().parent().parent()
-				vault = form.vault
+				vault = self.form.vault
 
 				vault.record_item.load(id_from)
 				vault.record_item.set_field("parent_id", id_to)
 				vault.record_item.save()
 
-				form.load_struct()
+				if self.form.drag_from is self:
+					self.form.load_struct()
+				else:
+					self.form.load_records()
 		else:
 			if QMessageBox.question(self.parent(), "Перемещение категории", "Переместить {0} на верхний уровень?".format(self.item_from_drag.text(0)), QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
 				id_from = self.item_from_drag.data(0, Qt.UserRole)
@@ -58,7 +65,39 @@ class QTreeWidgetDragDrop(QTreeWidget):
 				vault.record_item.set_field("parent_id", id_to)
 				vault.record_item.save()
 
-				form.load_struct()
+				if self.form.drag_from is self:
+					self.form.load_struct()
+				else:
+					self.form.load_records()
+
+		self.form.drag_from = None
+
+
+class QTreeWidgetDrag(QTreeWidget):
+	def __init__(self):
+		super(QTreeWidgetDrag, self).__init__()
+
+		self.setDropIndicatorShown(True)
+		self.setAutoExpandDelay(500)
+		self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+		self.setDragDropMode(QAbstractItemView.DragDrop)
+		self.setDragEnabled(True)
+
+		self.form = None
+
+	def setForm(self, in_form=None):
+		self.form = in_form
+
+	def dragEnterEvent(self, in_event):
+		if self.form.drag_from is None:
+			self.form.drag_from = self
+
+			super(QTreeWidgetDrag, self).dragEnterEvent(in_event)
+
+			item = self.currentItem()
+
+			if item is not None:
+				self.form.item_from_drag = item
 
 
 class TFormMain(QMainWindow):
@@ -74,6 +113,8 @@ class TFormMain(QMainWindow):
 
 		self.item_from_drag = None
 		self.item_to_drop   = None
+
+		self.drag_from    = None
 
 		self._init_icons_()
 		self._init_ui()
@@ -99,6 +140,7 @@ class TFormMain(QMainWindow):
 
 		# Структура
 		self.tree_main = QTreeWidgetDragDrop()
+		self.tree_main.setForm(self)
 		self.tree_main.setHeaderHidden(True)
 
 		self.panel_main  = QWidget()
@@ -139,7 +181,8 @@ class TFormMain(QMainWindow):
 		self.layout_main.addWidget(self.tree_main)
 
 		# Записи
-		self.tree_records = QTreeWidget()
+		self.tree_records = QTreeWidgetDrag()
+		self.tree_records.setForm(self)
 		self.tree_records.setIndentation(0)
 		self.tree_records.setHeaderHidden(True)
 
@@ -554,5 +597,5 @@ class TFormMain(QMainWindow):
 
 			item.setText(1, psw)
 
-	def treeRecords_onStartDrag(self):
-		print("Drag")
+	def move_object(self):
+		pass
