@@ -4,6 +4,7 @@ from module_vault import TVault
 from module_vault import SYSTEM_FIELDS
 from glob import glob
 from os.path import basename
+import webbrowser
 
 
 class QTreeWidgetDragDrop(QTreeWidget):
@@ -602,7 +603,7 @@ class TFormMain(QMainWindow):
 			item.setText(1, psw)
 
 	def btn_fields_web_onClick(self):
-		pass
+		webbrowser.open(self.select_field.data(1, Qt.UserRole))
 
 	def btn_fields_copy_onClick(self):
 		cboard = QApplication.clipboard()
