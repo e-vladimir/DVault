@@ -92,6 +92,7 @@ class QTreeWidgetDrag(QTreeWidget):
 	def dragMoveEvent(self, in_event):
 		in_event.ignore()
 
+
 class TFormMain(QMainWindow):
 	def __init__(self, in_application=None):
 		super(TFormMain, self).__init__()
@@ -284,6 +285,9 @@ class TFormMain(QMainWindow):
 
 		self.btn_record_add.clicked.connect(self.btn_record_add_onClick)
 		self.btn_record_edit.clicked.connect(self.btn_record_edit_onClick)
+
+		self.btn_fields_copy.clicked.connect(self.btn_fields_copy_onClick)
+		self.btn_fields_web.clicked.connect(self.btn_fields_web_onClick)
 		self.btn_fields_key.clicked.connect(self.btn_fields_show_onClick)
 
 		self.cb_main_icons.currentIndexChanged.connect(self.cb_main_icons_onChange)
@@ -402,8 +406,13 @@ class TFormMain(QMainWindow):
 		self.btn_record_edit.setDisabled(self.select_struct is None)
 		self.btn_record_remove.setDisabled(self.select_struct is None)
 
-		self.btn_fields_copy.setDisabled(self.select_struct is None or self.select_field is None)
-		self.btn_fields_web.setDisabled(self.select_struct is None or self.select_field is None)
+		if self.select_field is not None:
+			field_link = self.select_field.text(0) in ["Сайт", "Ссылка"]
+		else:
+			field_link = False
+
+		self.btn_fields_copy.setDisabled(self.select_field is None)
+		self.btn_fields_web.setEnabled(field_link and self.select_field is not None)
 
 	def read_selected_struct(self):
 		self.select_struct = self.tree_main.currentItem()
@@ -447,11 +456,16 @@ class TFormMain(QMainWindow):
 			self.vault.record_item.clear(True)
 			self.cb_record_icons.setCurrentIndex(-1)
 
-		self.show_fields()
+		self.load_fields()
 
 		self.gui_enabled_disabled()
 
-	def show_fields(self):
+	def read_selected_field(self):
+		self.select_field = self.tree_fields.currentItem()
+
+		self.gui_enabled_disabled()
+
+	def load_fields(self):
 		self.tree_fields.clear()
 		self.tree_fields.setHeaderLabels(["Field", "Value"])
 
@@ -494,7 +508,7 @@ class TFormMain(QMainWindow):
 		self.read_selected_record()
 
 	def tree_fields_onClick(self):
-		self.gui_enabled_disabled()
+		self.read_selected_field()
 
 	def btn_main_add_onClick(self):
 		if self.select_struct is not None:
@@ -587,5 +601,9 @@ class TFormMain(QMainWindow):
 
 			item.setText(1, psw)
 
-	def move_object(self):
+	def btn_fields_web_onClick(self):
 		pass
+
+	def btn_fields_copy_onClick(self):
+		cboard = QApplication.clipboard()
+		cboard.setText(self.select_field.data(1, Qt.UserRole))
